@@ -17,12 +17,11 @@ function preloadInit () {
 }
 
 function createInit() {
-    let textI = 'Left and right cursors move the shooter,\n';
-    textI += 'and also horizontal movements of the mouse.\n';
-    textI += 'Spacebar and mouse clicks fire the laser cannons.';
-    textI += '\n\nClick on the spacecraft to start.';
+    let textI = 'TIME VAULT ARCADE';
+    
     let styleI = {font:'20px Arial', fill:'#FFFFFF'};
-    let instructions = game.add.text(TEXT_OFFSET_HOR, TEXT_OFFSET_VER, textI, styleI);
+    let instructions = game.add.text(GAME_STAGE_WIDTH/2, GAME_STAGE_HEIGHT * 0.1, textI, styleI);
+    instructions.anchor.setTo(0.5, 0.5);
 
     let textC = 'Credits:\n';
     textC += '* Original craft pic created by "Fran" (Desarrollo XNA).\n';
