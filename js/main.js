@@ -1,6 +1,12 @@
-const GAME_STAGE_WIDTH = 800;
-const GAME_STAGE_HEIGHT = 640;
-let game = new Phaser.Game(GAME_STAGE_WIDTH, GAME_STAGE_HEIGHT, Phaser.CANVAS, 'gamestage');
+const ratio = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth);
+const GAME_HEIGHT = 720;
+const GAME_WIDTH = GAME_HEIGHT * ratio;
+const CONTAINER = document.getElementById("gamestage");
+const SCALE = window.innerWidth / GAME_WIDTH;
+
+CONTAINER.style.height = `${SCALE * GAME_HEIGHT}px`;
+
+let game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.CANVAS, CONTAINER);
 
 // Entry point
 window.onload = startGame;

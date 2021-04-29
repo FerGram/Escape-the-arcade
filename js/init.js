@@ -20,7 +20,7 @@ function createInit() {
     let textI = 'TIME VAULT ARCADE';
     
     let styleI = {font:'20px Arial', fill:'#FFFFFF'};
-    let instructions = game.add.text(GAME_STAGE_WIDTH/2, GAME_STAGE_HEIGHT * 0.1, textI, styleI);
+    let instructions = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.1, textI, styleI);
     instructions.anchor.setTo(0.5, 0.5);
 
     let textC = 'Credits:\n';
