@@ -1,8 +1,7 @@
-let player;
+let craft;
 const HUD_HEIGHT = 50;
 let cursors;
-const PLAYER_VELOCITY = 500;
-const PLAYER_JUMP_VELOCITY = 1000;
+const CRAFT_VELOCITY = 150;
 let stars;
 const LASERS_GROUP_SIZE = 40;
 let lasers;
@@ -15,13 +14,18 @@ let playState = {
 };
 
 function preloadPlay() {
-    game.load.image('square','imgs/blank_square.jpg');
+    game.load.image('craft','assets/imgs/craft.png');
+    game.load.image('stars','assets/imgs/stars.png');
 }
 
 function createPlay() {
+    let w = game.world.width;
+    let h = game.world.height;
+    stars = game.add.tileSprite(0, 0, w, h, 'stars');
 
-    createPlayer();
+    createCraft();
     createKeyControls();
+
 }
 
 function createKeyControls() {
@@ -29,31 +33,31 @@ function createKeyControls() {
 }
 
 function updatePlay() {
-    playerMovement();
-    //stars.tilePosition.y += 1;  // stars.tilePosition y stars.y son diferentes ejjejeje que chulo
+    manageCraftMovements();
+    stars.tilePosition.y += 1;  // stars.tilePosition y stars.y son diferentes ejjejeje que chulo
 }
 
-function playerMovement() {
-    if (cursors.left.isDown)
-        player.body.velocity.x = -PLAYER_VELOCITY;
-    else if (cursors.right.isDown)
-        player.body.velocity.x = PLAYER_VELOCITY;
-    else player.body.velocity.x = 0;
-
-    if (cursors.up.isDown)
-        player.body.velocity.y = PLAYER_JUMP_VELOCITY;
+function manageCraftMovements() {
+    craft.body.velocity.x = 0;
+    if (cursors.left.isDown || game.input.speed.x < 0)
+        craft.body.velocity.x = -CRAFT_VELOCITY;
+    else if (cursors.right.isDown || game.input.speed.x > 0)
+        craft.body.velocity.x = CRAFT_VELOCITY;
  }
 
-function createPlayer() {
-    let x = game.world.centerX;
-    let y = game.world.height - 500;//HUD_HEIGHT;
-    player = game.add.sprite(x, y, 'square');
-    player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(0.2, 0.2);
-
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.physics.arcade.enable(player);
-    player.body.gravity.y = 1400;
-    player.body.bounce.y = 0.2;
-    player.body.collideWorldBounds = true;
+function startHOF() {
+    game.state.start('hof');
 }
+
+function createCraft() {
+    let x = game.world.centerX;
+    let y = game.world.height - HUD_HEIGHT;
+    craft = game.add.sprite(x, y, 'craft');
+    craft.anchor.setTo(0.5, 0.5);
+
+    game.physics.arcade.enable(craft);
+    craft.body.collideWorldBounds = true;
+}
+
+
+    
