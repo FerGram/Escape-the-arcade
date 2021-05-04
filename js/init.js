@@ -12,14 +12,14 @@ let initState = {
 };
 
 function preloadInit () {
-    game.load.image('craft', 'assets/imgs/craft.png');
+    game.load.image('playButton', 'assets/imgs/play.png');
     game.load.image('ufo', 'assets/imgs/ufo.png');
 }
 
 function createInit() {
     let textI = 'TIME VAULT ARCADE';
     
-    let styleI = {font:'20px Arial', fill:'#FFFFFF'};
+    let styleI = {font:'50px Krona One', fill:'#FFFFFF'};
     let instructions = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.1, textI, styleI);
     instructions.anchor.setTo(0.5, 0.5);
 
