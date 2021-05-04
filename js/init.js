@@ -2,7 +2,7 @@ const SHIP_OFFSET_HOR = 150;
 const SHIP_OFFSET_VER = 90;
 
 let btnStart;
-let imgUfo;
+let imgStop;
 
 let initState = {
     preload: preloadInit,
@@ -10,8 +10,8 @@ let initState = {
 };
 
 function preloadInit () {
-    game.load.image('playButton', 'assets/imgs/play.png');
-    game.load.image('ufo', 'assets/imgs/ufo.png');
+    game.load.image('playButton', 'assets/imgs/buttons/play.png');
+    game.load.image('stop', 'assets/imgs/buttons/stop.jpg');
 }
 
 function createInit() {
@@ -35,18 +35,20 @@ function createInit() {
     let credits = game.add.text(TEXT_OFFSET_HOR, game.world.height-TEXT_OFFSET_VER, textC, styleC);
     credits.anchor.setTo(0, 1);*/
 
+    // PLAY BUTTON
     let posX = game.world.width/2;
     let posY = game.world.height/2;
-    btnStart = game.add.button(posX, posY, 'craft', clickStart);
+    btnStart = game.add.button(posX, posY, 'playButton', clickStart);
     btnStart.checkWorldBounds = true;
     btnStart.events.onOutOfBounds.add(startPlay, this);
     btnStart.anchor.setTo(0.5, 0.5);
-    btnStart.scale.setTo(2.0);
+    btnStart.scale.setTo(1.0);
 
-    posY = game.world.centerY;
-    imgUfo = game.add.image(posX, posY, 'ufo');
-    imgUfo.anchor.setTo(0.5, 0.5);
-    imgUfo.scale.setTo(2.0);
+    // OTHER BUTTON
+    posY = game.world.centerY + 100;
+    imgStop = game.add.image(posX, posY, 'stop');
+    imgStop.anchor.setTo(0.5, 0.5);
+    imgStop.scale.setTo(0.5);
 }
 
 function startPlay() {
@@ -64,5 +66,5 @@ const DECREASE_Y = 8;
 const DECREASE_X = 10;
 function moveButtonAndImage() {
 btnStart.y -= DECREASE_Y;
-imgUfo.x -= DECREASE_X;
+imgStop.x -= DECREASE_X;
 }
