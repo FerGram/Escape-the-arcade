@@ -1,5 +1,3 @@
-const TEXT_OFFSET_HOR = 40;
-const TEXT_OFFSET_VER = 40;
 const SHIP_OFFSET_HOR = 150;
 const SHIP_OFFSET_VER = 90;
 
@@ -20,22 +18,25 @@ function createInit() {
     let textI = 'TIME VAULT ARCADE';
     
     let styleI = {font:'50px Krona One', fill:'#FFFFFF'};
-    let instructions = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.1, textI, styleI);
-    instructions.anchor.setTo(0.5, 0.5);
+    let title = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.2, textI, styleI);
+    title.anchor.setTo(0.5, 0.5);
 
-    let textC = 'Credits:\n';
+    /*  ESTO LO TENEMOS QUE METER EN UNA ESCENA DISTINTA
+        const TEXT_OFFSET_HOR = 40;
+        const TEXT_OFFSET_VER = 40;
+    let textC = 'Credits:\n';     
     textC += '* Original craft pic created by "Fran" (Desarrollo XNA).\n';
     textC += '* Original UFO pic created by "0melapics" (Freepik.com).\n';
     textC += '* Original laser pic from Phaser tutorial "Invaders".\n';
     textC += '* Blast animation from Phaser tutorial "Invaders".\n';
     textC += '* Blast sound created by "dklon" (OpenGameArt.Com).\n';
     textC += '* Laser sound created by "dklon" (OpenGameArt.Com).';
-    let styleC = {font:'16px Arial', fill:'#FF0000'};
+    let styleC = {font:'16px Krona One', fill:'#0088FF'};
     let credits = game.add.text(TEXT_OFFSET_HOR, game.world.height-TEXT_OFFSET_VER, textC, styleC);
-    credits.anchor.setTo(0, 1);
+    credits.anchor.setTo(0, 1);*/
 
-    let posX = game.world.width-SHIP_OFFSET_HOR;
-    let posY = game.world.height-SHIP_OFFSET_VER;
+    let posX = game.world.width/2;
+    let posY = game.world.height/2;
     btnStart = game.add.button(posX, posY, 'craft', clickStart);
     btnStart.checkWorldBounds = true;
     btnStart.events.onOutOfBounds.add(startPlay, this);

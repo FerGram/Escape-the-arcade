@@ -1,12 +1,15 @@
 const ratio = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth);
-const GAME_HEIGHT = 720;
-const GAME_WIDTH = GAME_HEIGHT * ratio;
+const WINDOW_GAME_HEIGHT = 1080;
+const WINDOW_GAME_WIDTH = WINDOW_GAME_HEIGHT * ratio;
 const CONTAINER = document.getElementById("gamestage");
-const SCALE = window.innerWidth / GAME_WIDTH;
-
-CONTAINER.style.height = `${SCALE * GAME_HEIGHT}px`;
+const SCALE = window.innerWidth / WINDOW_GAME_WIDTH;
+// console.log(SCALE);
+// REAL SIZE THAT SHOULD BE DISPLAYED
+const GAME_HEIGHT = WINDOW_GAME_HEIGHT*SCALE;
+const GAME_WIDTH = WINDOW_GAME_WIDTH*SCALE;
 
 let game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.CANVAS, CONTAINER);
+
 
 let wfConfig = {
     active: function () { // Runs when the fonts are loaded
