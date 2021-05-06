@@ -1,7 +1,7 @@
 
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
-const PLAYER_JUMP_VELOCITY = 1000;
+const PLAYER_JUMP_VELOCITY = 1700;
 let player;
 let cursors;
 let platforms;
@@ -60,8 +60,8 @@ function createPlayer() {
 
     game.physics.arcade.enable(player);
 
-    player.body.gravity.y = 1400;
-    player.body.bounce.y = 0.2;
+    player.body.gravity.y = 4000;
+    //player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
 }
