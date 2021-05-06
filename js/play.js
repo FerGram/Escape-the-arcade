@@ -1,11 +1,11 @@
-let craft;
 const HUD_HEIGHT = 50;
+const PLAYER_VELOCITY = 500;
+const PLAYER_JUMP_VELOCITY = 1700;
+let player;
 let cursors;
-const CRAFT_VELOCITY = 150;
-let stars;
-const LASERS_GROUP_SIZE = 40;
-let lasers;
-
+let platforms;
+let ground;
+let isGrounded = false;
 
 let playState = {
     preload: preloadPlay,
@@ -14,18 +14,17 @@ let playState = {
 };
 
 function preloadPlay() {
-    game.load.image('craft','assets/imgs/craft.png');
-    game.load.image('stars','assets/imgs/stars.png');
+    game.load.image('player','/assets/imgs/WhiteSquare.jpg');
+    game.load.image('ground','/assets/imgs/GreenSquare.png');
 }
 
 function createPlay() {
-    let w = game.world.width;
-    let h = game.world.height;
-    stars = game.add.tileSprite(0, 0, w, h, 'stars');
 
-    createCraft();
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    createPlayer();
+    createPlatforms();
     createKeyControls();
-
 }
 
 function createKeyControls() {
@@ -33,31 +32,46 @@ function createKeyControls() {
 }
 
 function updatePlay() {
-    manageCraftMovements();
-    stars.tilePosition.y += 1;  // stars.tilePosition y stars.y son diferentes ejjejeje que chulo
+    isGrounded = game.physics.arcade.collide(player, platforms);
+    playerMovement();
 }
 
-function manageCraftMovements() {
-    craft.body.velocity.x = 0;
-    if (cursors.left.isDown || game.input.speed.x < 0)
-        craft.body.velocity.x = -CRAFT_VELOCITY;
-    else if (cursors.right.isDown || game.input.speed.x > 0)
-        craft.body.velocity.x = CRAFT_VELOCITY;
- }
+function playerMovement() {
+    if (cursors.left.isDown)
+        player.body.velocity.x = -PLAYER_VELOCITY;
+    else if (cursors.right.isDown)
+        player.body.velocity.x = PLAYER_VELOCITY;
+    else player.body.velocity.x = 0;
 
-function startHOF() {
-    game.state.start('hof');
+    if (cursors.up.isDown && isGrounded && player.body.touching.down){
+        player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
+        isGrounded = false;
+    }
 }
 
-function createCraft() {
+function createPlayer() {
     let x = game.world.centerX;
-    let y = game.world.height - HUD_HEIGHT;
-    craft = game.add.sprite(x, y, 'craft');
-    craft.anchor.setTo(0.5, 0.5);
+    let y = game.world.height - 500;
 
-    game.physics.arcade.enable(craft);
-    craft.body.collideWorldBounds = true;
+    player = game.add.sprite(x, y, 'player');
+    player.anchor.setTo(0.5, 0.5);
+    player.scale.setTo(0.2, 0.2);
+
+    game.physics.arcade.enable(player);
+
+    player.body.gravity.y = 4000;
+    //player.body.bounce.y = 0.2;
+    player.body.collideWorldBounds = true;
+    player.enableBody = true;
 }
 
-
+function createPlatforms() {
     
+    platforms = game.add.group();
+    platforms.enableBody = true;
+
+    ground = game.add.sprite(0, GAME_HEIGHT - 50, 'ground');
+    platforms.add(ground);
+    ground.scale.setTo(20, 1);
+    ground.body.immovable = true;
+}
