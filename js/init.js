@@ -52,7 +52,7 @@ function createInit() {
 }
 
 function startPlay() {
-    game.state.start('play');
+    game.state.start('playTest');
 }
 
 const FREQUENCY = 1000/30;
