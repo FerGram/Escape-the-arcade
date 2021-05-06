@@ -38,21 +38,27 @@ function createInit() {
     // PLAY BUTTON
     let posX = game.world.width/2;
     let posY = game.world.height/2;
-    btnStart = game.add.button(posX, posY, 'playButton', clickStart);
+    btnStart = game.add.button(posX, posY, 'playButton', startPlay);
     btnStart.checkWorldBounds = true;
-    btnStart.events.onOutOfBounds.add(startPlay, this);
+    // btnStart.events.onOutOfBounds.add(startPlay, this);
     btnStart.anchor.setTo(0.5, 0.5);
     btnStart.scale.setTo(1.0);
+    btnStart.events.onInputOver.add(mouseOver, this);
 
     // OTHER BUTTON
-    posY = game.world.centerY + 100;
-    imgStop = game.add.image(posX, posY, 'stop');
+    posY += btnStart.height + 50;
+    btnAbout = game.add.button(posX, posY,
+        'stop', onAboutButtonPressed);
+    btnAbout.anchor.setTo(0.5, 0.5);
+    btnAbout.scale.setTo(0.5);
+    /*imgStop = game.add.image(posX, posY, 'stop');
     imgStop.anchor.setTo(0.5, 0.5);
     imgStop.scale.setTo(0.5);
+    imgStop.scale.setTo(0.5);*/
 }
 
 function startPlay() {
-    game.state.start('playTest');
+    game.state.start('play');
 }
 
 const FREQUENCY = 1000/30;
@@ -62,9 +68,11 @@ function clickStart() {
     FREQUENCY, moveButtonAndImage, this);
 }
 
-const DECREASE_Y = 8;
-const DECREASE_X = 10;
-function moveButtonAndImage() {
-btnStart.y -= DECREASE_Y;
-imgStop.x -= DECREASE_X;
+function mouseOver(button) {
+
+}
+
+function onAboutButtonPressed() {
+    // Add the instruction required to start the 'about' state
+    game.state.start('about');
 }
