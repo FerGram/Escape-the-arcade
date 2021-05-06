@@ -33,9 +33,8 @@ function createKeyControls() {
 }
 
 function updatePlay() {
+    isGrounded = game.physics.arcade.collide(player, platforms);
     playerMovement();
-    game.physics.arcade.collide(player, platforms, playerOnGround, null, this);
-    console.log(player.body.velocity.y);
 }
 
 function playerMovement() {
@@ -45,7 +44,7 @@ function playerMovement() {
         player.body.velocity.x = PLAYER_VELOCITY;
     else player.body.velocity.x = 0;
 
-    if (cursors.up.isDown && isGrounded){
+    if (cursors.up.isDown && isGrounded && player.body.touching.down){
         player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
         isGrounded = false;
     }
@@ -76,9 +75,4 @@ function createPlatforms() {
     platforms.add(ground);
     ground.scale.setTo(20, 1);
     ground.body.immovable = true;
-}
-
-function playerOnGround(){
-    if (player.body.touching.down) isGrounded = true;
-    else isGrounded = false;
 }
