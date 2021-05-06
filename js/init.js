@@ -44,6 +44,7 @@ function createInit() {
     btnStart.anchor.setTo(0.5, 0.5);
     btnStart.scale.setTo(1.0);
     btnStart.events.onInputOver.add(mouseOver, this);
+    btnStart.events.onInputOut.add(mouseOut, this);
 
     // OTHER BUTTON
     posY += btnStart.height + 50;
@@ -51,6 +52,8 @@ function createInit() {
         'stop', onAboutButtonPressed);
     btnAbout.anchor.setTo(0.5, 0.5);
     btnAbout.scale.setTo(0.5);
+    btnAbout.events.onInputOver.add(mouseOver, this);
+    btnAbout.events.onInputOut.add(mouseOut, this);
     /*imgStop = game.add.image(posX, posY, 'stop');
     imgStop.anchor.setTo(0.5, 0.5);
     imgStop.scale.setTo(0.5);
@@ -69,10 +72,14 @@ function clickStart() {
 }
 
 function mouseOver(button) {
+    button.scale.setTo(button.scale.x*1.5);
+}
 
+function mouseOut(button) {
+    button.scale.setTo(button.scale.x*2/3);
 }
 
 function onAboutButtonPressed() {
     // Add the instruction required to start the 'about' state
-    game.state.start('about');
+    game.state.start('instructions');
 }

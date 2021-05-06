@@ -37,7 +37,7 @@ function startGame() {
     // Menu Screen
     game.state.add('init', initState);
     // About Screen
-    game.state.add('about', aboutState);
+    game.state.add('instructions', instructionsState);
     // Gameplay Screen
     game.state.add('play', playState);
     // Some other screen
