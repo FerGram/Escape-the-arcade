@@ -3,12 +3,16 @@
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
 const PLAYER_JUMP_VELOCITY = 1000;
+
+//World bounds/size
+const WORLD_WIDTH = 2000;
+const WORLD_HEIGHT = 900;
+
 let player;
 let cursors;
 let platforms;
 let ground;
 let isGrounded = false;
-
 
 let isWalking = false; //used to check if walking or not, and to set the proper anim.
 let playerScale = 2; //Scale of player.
@@ -22,18 +26,30 @@ let playTestState = {
 function preloadPlay() {
     //game.load.image('player','/assets/imgs/WhiteSquare.jpg');
     game.load.image('ground','./assets/imgs/GreenSquare.png');
+    game.load.image('ground1','./assets/imgs/GreenSquare.png'); //Test for fixedToCamera for UI
 
     //Loading the spritesheet for the player
     game.load.spritesheet('player', './assets/imgs/NinjaFrog/SpriteSheet.png', 32, 32, 23);
 
+    game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 }
 
 function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    createLevel();
+
+    ground1 = game.add.sprite(5, 5, 'ground1'); //Test for fixedToCamera for UI
+    ground1.fixedToCamera = true;
+
     createPlayer();
     createPlatforms();
     createKeyControls();
+
+
+    game.camera.follow(player);
+    player.scrollFactorX = 0;
+    player.scrollFactorY = 0;
 }
 
 function createKeyControls() {
@@ -105,4 +121,12 @@ function createPlatforms() {
     platforms.add(ground);
     ground.scale.setTo(20, 1);
     ground.body.immovable = true;
+}
+
+function createLevel(){
+    game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    let bg = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bgMain');
+    bg.scrollFactorX = 0.7;
+    bg.scrollFactorY = 0.7;
+
 }
