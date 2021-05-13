@@ -17,21 +17,22 @@ let isGrounded = false;
 let isWalking = false; //used to check if walking or not, and to set the proper anim.
 let playerScale = 2; //Scale of player.
 
-let playTestState = {
+let playTestHarounState = {
     preload: preloadPlay,
     create: createPlay,
     update: updatePlay
 };
 
 function preloadPlay() {
-    //game.load.image('player','/assets/imgs/WhiteSquare.jpg');
     game.load.image('ground','./assets/imgs/GreenSquare.png');
     game.load.image('ground1','./assets/imgs/GreenSquare.png'); //Test for fixedToCamera for UI
 
     //Loading the spritesheet for the player
-    game.load.spritesheet('player', './assets/imgs/NinjaFrog/SpriteSheet.png', 32, 32, 23);
+    game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
+    game.load.image('tiles', './assets/imgs/Terrain.png');
+    game.load.tilemapTiledJSON('map', 'assets/levels/level1.json');
 }
 
 function createPlay() {
@@ -41,6 +42,7 @@ function createPlay() {
 
     ground1 = game.add.sprite(5, 5, 'ground1'); //Test for fixedToCamera for UI
     ground1.fixedToCamera = true;
+    ground1.scale.setTo(0.1, 0.1);
 
     createPlayer();
     createPlatforms();
@@ -129,4 +131,11 @@ function createLevel(){
     bg.scrollFactorX = 0.7;
     bg.scrollFactorY = 0.7;
 
+    //Create
+    const map = game.add.tilemap('map', 16, 16);
+    const tileset = map.addTilesetImage('Terrain', 'tiles');
+
+    const layer = map.createLayer(0);
+    //layer.resizeWorld();
+    createPlatforms()
 }
