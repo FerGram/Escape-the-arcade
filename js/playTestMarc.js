@@ -80,9 +80,9 @@ function createKeyControls() {
 function updatePlay() {
 
     isGrounded = game.physics.arcade.collide(player, platforms);
-    //if(correctAnswers >= maxCorrectWords)
+    if(correctAnswers >= maxCorrectWords)
         playerMovement(); 
-   //else
+   else
         alienMovement();
 }
 
