@@ -4,6 +4,7 @@ const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
 const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 10
 const TIMEOUT = 2000;
+const maxCorrectWords = 8;
 let ALIEN_DOWN_VELOCITY = 0.5;
 
 const PLAYER_JUMP_VELOCITY = 1700;
@@ -11,13 +12,14 @@ let player;
 
 let alien;
 let timer;
-let error;
-let correct;
+let error;  // incorrect answer sprite
+let correct;    // correct answer sprite
+let consoleSprite;
 var options = ["nintendo 64","playstation one","dreamcast","xbox","nes","gameboy","playstation two","snes"];
-let option = [];    // The string of the console
+let option = [];    // The string of the player's input
 let currentLetterIndex = 0; // The index of the letter now waiting
 let currentWordIndex = 0;   // The index of the word inside options
-let doneWords = [false, false, false, false, false, false, false, false]; // List of completed words
+let doneWords = [false, false, false, false, false, false, false, false]; // For when the player fails and we loop the array
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
@@ -33,12 +35,23 @@ let playState = {
 };
 
 function preloadPlay() {
+
     game.load.image('player','/assets/imgs/WhiteSquare.jpg');
     game.load.image('ground','/assets/imgs/GreenSquare.png');
 
+
     game.load.image('alien', '/assets/imgs/alien.png');
     game.load.image('error', '/assets/imgs/error.png');
-    game.load.image('correct', '/assets/imgs/Consolas.gif')
+    game.load.image('correct', '/assets/imgs/Consolas.gif');
+
+    game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
+    game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
+    game.load.image('dreamcast', '/assets/imgs/consoles/dreamcast.png');
+    game.load.image('xbox', '/assets/imgs/consoles/xbox.png');
+    game.load.image('nes', '/assets/imgs/consoles/nes.png');
+    game.load.image('gameboy', '/assets/imgs/consoles/gameboy.png');
+    game.load.image('playstation two', '/assets/imgs/consoles/playstationTwo.png');
+    game.load.image('snes', '/assets/imgs/consoles/snes.png');
 }
 
 function createPlay() {
@@ -56,6 +69,8 @@ function createPlay() {
         console.log(options);
     }
     createTypeGame();
+    game.world.setBounds(0, 0, 2000, GAME_HEIGHT);
+    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
 function createKeyControls() {
@@ -63,12 +78,16 @@ function createKeyControls() {
 }
 
 function updatePlay() {
+
     isGrounded = game.physics.arcade.collide(player, platforms);
-    playerMovement();
-    alienMovement();
+    //if(correctAnswers >= maxCorrectWords)
+        playerMovement(); 
+   //else
+        alienMovement();
 }
 
 function playerMovement() {
+
     if (cursors.left.isDown)
         player.body.velocity.x = -PLAYER_VELOCITY;
     else if (cursors.right.isDown)
@@ -83,6 +102,7 @@ function playerMovement() {
 
 
 function createPlayer() {
+
     let x = game.world.centerX;
     let y = game.world.height - 500;
 
@@ -119,26 +139,26 @@ function alienMovement() {
     alien.y += ALIEN_DOWN_VELOCITY;
 }
 
-// When the word is not hit
-function stopAlienBad() {
+// When the word is not completed
+function wordTimeOut() {
     game.input.keyboard.enabled = false;
     error.alpha = 1;
     game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
     ALIEN_DOWN_VELOCITY = 0;
-    setTimeout(deleteAlien, TIMEOUT);
+    setTimeout(clearWordScreen, TIMEOUT);
 }
-// When the word is hit
-function stopAlienGood() {
+// When the word is completed
+function wordCorrectAnswer() {
     correct.alpha = 1;
     game.add.tween(correct).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
     ALIEN_DOWN_VELOCITY = 0;
-    setTimeout(deleteAlien, TIMEOUT);
+    setTimeout(clearWordScreen, TIMEOUT);
 }
 
 // Restart error and correct sprites and alien position
-function deleteAlien() {
+function clearWordScreen() {
     error.alpha = 0;
     correct.alpha = 0;
     timer.resume();
@@ -150,18 +170,18 @@ function deleteAlien() {
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
-    if(e.key.toLowerCase() === option[currentLetterIndex]) {
+    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
         let newText = typing.text;
-        newText = newText.replace("_", e.key);
-        typing.setText(newText.toUpperCase());     
+        newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
+        typing.setText(newText.toUpperCase());     // Show the word in upper case  
         currentLetterIndex += 1; 
     }
     // Game flow
     if (currentLetterIndex == option.length) {
-        game.input.keyboard.enabled = false;
+        game.input.keyboard.enabled = false;    // When completing a word, cease keyboard listener
         correctAnswers += 1;
         doneWords[currentWordIndex] = true;
-        stopAlienGood();
+        wordCorrectAnswer();
     }
     // When the next character is space, add it automatically
     else if (option[currentLetterIndex] == ' ') {
@@ -170,8 +190,6 @@ function getKeyboardInput(e) {
             typing.setText(newText.toUpperCase());     
             currentLetterIndex += 1;
     }
-
-    
 }
 
 // Gets a random order for the consoles
@@ -188,6 +206,7 @@ function shuffle(array) {
     }
     return array;
 } 
+
 // Creates timers and words
 function createTypeGame() {
 
@@ -195,12 +214,12 @@ function createTypeGame() {
     timer = game.time.create(false);
 
     //  Set a TimerEvent to occur after X seconds
-    timer.loop(DISAPPEARANCE_TIME, stopAlienBad, this);
+    timer.loop(DISAPPEARANCE_TIME, wordTimeOut, this);
 
     //  Start the timer running - this is important!
-    //  It won't start automatically, allowing you to hook it to button events and the like.
     timer.start();
 
+    // Display and hide sprites for the correct and wrong answers
     error = game.add.sprite(50, 50, 'error');
     error.anchor.setTo(0.5,0.5);
     error.scale.setTo(0.1);
@@ -213,9 +232,14 @@ function createTypeGame() {
 
     game.input.keyboard.onDownCallback = getKeyboardInput; // Calling getKeyboardInput when a key is pressed
 
+    // Show the current console to be guessed
+    consoleSprite = game.add.sprite(GAME_WIDTH / 4, GAME_HEIGHT / 3, options[currentWordIndex]);
+    consoleSprite.alpha = 0;
+    game.add.tween(consoleSprite).to( { alpha: 1 }, 100, "Linear", true);
+
+    // Prepare the current word
     option = options[currentWordIndex];
 
-    console.log(option);
     typing = game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "_ ".repeat(option.length) , 
                             {fontSize: '20px', fill: '#FA2'});
 }
@@ -223,10 +247,12 @@ function createTypeGame() {
 // Chooses new word and resets all timers and sprites
 function restartTypeGame() {
 
-    if (correctAnswers < 8) {
+    // Always pass to the next word
+    currentWordIndex += 1;
 
-        // Always pass to the next word
-        currentWordIndex += 1;
+    if (correctAnswers < maxCorrectWords) {
+
+        
         if (currentWordIndex > 7) 
                 currentWordIndex = 0;
         // Only show the words that were not completed
@@ -236,6 +262,7 @@ function restartTypeGame() {
             else  
                 currentWordIndex += 1;
         }
+        consoleSprite.destroy();
         timer.destroy();
         alien.destroy();
         typing.destroy();
@@ -243,9 +270,17 @@ function restartTypeGame() {
 
         createAlien();
         createTypeGame();
+   
         game.input.keyboard.enabled = true;
     }
     else {
-        game.state.start('hof');
+
+        consoleSprite.destroy();
+        timer.destroy();
+        alien.destroy();
+        typing.destroy();
+        //game.state.start('hof');
+        game.input.keyboard.enabled = true;
+        game.input.keyboard.onDownCallback = null;
     }
 }
