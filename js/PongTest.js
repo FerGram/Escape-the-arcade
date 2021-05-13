@@ -14,6 +14,8 @@ let player1Score = 0;
 let player2Score = 0;
 let player1ScoreLabel, player2ScoreLabel;
 
+let canStartGame = false;
+
 const SPAWN_BALL_TIME = 7500; //In miliseconds
 
 const BALL_VELOCITY = 500;
@@ -36,16 +38,19 @@ function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     balls = game.add.group();
     
-    createTimer();
-    createPongPlayers();
-    createBall();
-    createScore();
-    createStage();
+    game.time.events.add(1500, createPongPlayers);
+    game.time.events.add(3000, createStage);
+    game.time.events.add(4500, createScore);
+    game.time.events.add(6000, createBall);
+    game.time.events.add(6000, createTimer);
 }
 
 function updatePlay() {
-    ballMovement();
-    pongPlayerMovement();
+
+    if (canStartGame){
+        ballMovement();
+        pongPlayerMovement();
+    }
 }
 
 function ballMovement() {
@@ -104,7 +109,7 @@ function updateTimer(){ //This is an event callback (not in update method)
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 30) stopGame();
+    if (minutes == 0 && seconds > 30 && canStartGame) stopGame();
 }
 
 function createTimer(){
@@ -113,6 +118,7 @@ function createTimer(){
     gameBallSpawner = game.time.events.loop(SPAWN_BALL_TIME, createBall);
 
     timeStartPoint = new Date();
+    canStartGame = true;
 }
 
 function createPongPlayers() {
@@ -199,6 +205,9 @@ function resetBall(ball) {
 }
 
 function stopGame(){
+
+    canStartGame = false;
+
     balls.forEach(ball => {
         ball.body.velocity.x = 0;
         ball.body.velocity.y = 0;
@@ -206,8 +215,8 @@ function stopGame(){
     pongPlayer1.body.velocity = 0;
     pongPlayer2.body.velocity = 0;
 
-    let endtext = game.add.text(game.width/2, game.height/2, 
+    let endtext = game.add.text(game.width/2, game.height/2 - 150, 
         (player1Score > player2Score? "Player 1 WINS" : "Player 2 WINS"), 
-        {font:'50px Arial', fill: "#fff"});
+        {font:'50px Arial', fill: "#FF0000"});
     endtext.anchor.setTo(0.5, 0.5);
 }
