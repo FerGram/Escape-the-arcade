@@ -45,7 +45,7 @@ function createPlay() {
     //game.camera.scale.setTo(3, 3);
     //game.camera.visible = true;
 
-    game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    //game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     game.camera.focusOnXY(0, 0);

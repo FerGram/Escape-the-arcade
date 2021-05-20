@@ -19,6 +19,11 @@ let map;
 let layer;
 let tileset;
 
+let gun;
+let gunScale = 1;
+let gunOffsetX = 2;
+let gunOffsetY = 7;
+
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
 
@@ -37,6 +42,8 @@ function preloadPlay() {
     game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/Terrain.png');
 
+    game.load.spritesheet('gun', './assets/imgs/AK47.png', 84, 30, 20);
+
 }
 
 function createPlay() {
@@ -45,7 +52,7 @@ function createPlay() {
     //game.camera.scale.setTo(3, 3);
     //game.camera.visible = true;
 
-    game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    //game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     game.camera.focusOnXY(0, 0);
@@ -67,6 +74,10 @@ function createPlay() {
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
+    createGun();
+
+    //player.addChild(gun);
+    gun.position.setTo(gunOffsetX + 150, gunOffsetY + 150);
 }
 
 function createKeyControls() {
@@ -76,6 +87,10 @@ function createKeyControls() {
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
     playerMovement();
+    //let playerPos = 
+    gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
+    gunRotation();
+
 }
 
 function playerMovement() {
@@ -121,7 +136,6 @@ function playerMovement() {
 function createPlayer() {
 
     player = game.add.sprite(32, 32, 'player');
-
     game.physics.arcade.enable(player);
     game.physics.arcade.gravity.y = 450;
 
@@ -138,16 +152,25 @@ function createPlayer() {
     player.anchor.setTo(0.5, 0.5);
 }
 
+function createGun(){
+    gun = game.add.sprite(100, 100, 'gun');
+    gun.anchor.setTo(0.5, 0.5);
+    gun.scale.setTo(-1 * gunScale, gunScale);
+}
+
+function gunRotation(){
+    gun.rotation = game.physics.arcade.angleToPointer(gun);
+}
+
 function createLevel(){
     //Create
     map = game.add.tilemap('map');
     map.addTilesetImage('Terrain', 'tiles');
 
-    map.setCollisionBetween(0, 60);
+    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); //Update in BU2
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
     //layer.debug = true;
-
 }
