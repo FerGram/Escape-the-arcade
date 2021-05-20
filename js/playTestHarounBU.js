@@ -1,34 +1,25 @@
+//Adding anims to Fer's playTest
+//http://teseo.act.uji.es/~al394827/ProyectoWebTest/
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
 const PLAYER_JUMP_VELOCITY = 1000;
+
+//World bounds/size
+const WORLD_WIDTH = 2000;
+const WORLD_HEIGHT = 900;
 
 let player;
 let cursors;
 let platforms;
 let ground;
 let isGrounded = false;
-let isWalking = false;
-let isFlipped = false; //Is he looking left?
-let playerScale = 2; 
 
-const WORLD_WIDTH = 100 * 16; //Get from Tiled
-const WORLD_HEIGHT = 24 * 16; //Get from Tiled
+let isWalking = false; //used to check if walking or not, and to set the proper anim.
+let playerScale = 2; //Scale of player.
 
 let map;
 let layer;
 let tileset;
-
-let size = new Phaser.Rectangle();
-let zoomAmount = 0;
-
-
-let level_1 = false;
-let level_1_created = false;
-let level_2 = false;
-let level_2_created = false;
-let level_3 = false;
-let level_3_created = false;
-
 
 let playState = {
     preload: preloadPlay,
@@ -37,34 +28,35 @@ let playState = {
 };
 
 function preloadPlay() {
-    //game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
+    game.load.image('ground','./assets/imgs/GreenSquare.png');
+    game.load.image('ground1','./assets/imgs/GreenSquare.png'); //Test for fixedToCamera for UI
+
+    //Loading the spritesheet for the player
+    game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 
-    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.tilemap('map', './assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/Terrain.png');
 
-    //------PONG--------------------------------------------
-    game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
-    game.load.image('middle','/assets/imgs/WhiteSquare.jpg');
-    game.load.image('players','/assets/imgs/WhiteSquare.jpg');
-
-    game.load.image('ground1','./assets/imgs/GreenSquare.png')
-    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
-    //game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 }
 
 function createPlay() {
-
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    createCameraSet();
-    createPlayer();
-    // createPlatforms();
     createLevel();
+
+    ground1 = game.add.sprite(5, 5, 'ground1'); //Test for fixedToCamera for UI
+    ground1.fixedToCamera = true;
+    ground1.scale.setTo(0.1, 0.1);
+
+    createPlayer();
     createKeyControls();
 
-    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    game.camera.follow(player);
+    player.scrollFactorX = 0;
+    player.scrollFactorY = 0;
 }
 
 function createKeyControls() {
@@ -72,19 +64,7 @@ function createKeyControls() {
 }
 
 function updatePlay() {
-    isGrounded = game.physics.arcade.collide(player, layer);
-    //isGrounded = game.physics.arcade.collide(player, platforms);
-
-    if (level_1){
-
-        if(!level_1_created) {
-            createPONG();
-            level_1_created = true;
-        }
-
-        updatePONG();
-    } 
-
+    game.physics.arcade.collide(player, layer);
     playerMovement();
 }
 
@@ -112,29 +92,10 @@ function playerMovement() {
         }
         player.body.velocity.x = 0; //change velocity on x to 0.
     }
-    //cursors.up.isDown && isGrounded && player.body.touching.down){
-    if (player.body.onFloor() && cursors.up.isDown){
-        player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
+    if (cursors.up.isDown && isGrounded && player.body.touching.down){
+        //player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
         isGrounded = false;
     }
-}
-
-function createCameraSet(){
-    size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-
-    game.camera.focusOnXY(0, 0);
-
-    game.camera.scale.x += zoomAmount;
-    game.camera.scale.y += zoomAmount;
-
-    game.camera.bounds.x = size.x * game.camera.scale.x;
-    game.camera.bounds.y = size.y * game.camera.scale.y;
-
-    game.camera.bounds.width = size.width * game.camera.scale.x;
-    game.camera.bounds.height = size.height * game.camera.scale.y;
-
-    game.stage.backgroundColor = '#18C4BC'; //Bluish
-
 }
 
 function createPlayer() {
@@ -159,14 +120,25 @@ function createPlayer() {
     player.enableBody = true;
 }
 
-function createLevel() {
+function createPlatforms() {
+    console.log("Yoooloo");
 
+}
+
+function createLevel(){
+    //game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    //let bg = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bgMain');
+    //bg.scrollFactorX = 0.7;
+    //bg.scrollFactorY = 0.7;
+
+    //Create
     map = game.add.tilemap('map');
     map.addTilesetImage('Terrain', 'tiles');
 
-    map.setCollisionBetween(0, 60);
 
     layer = map.createLayer('layer1');
-    layer.setScale(2, 2);
-    layer.resizeWorld();
+    layer.scale.setTo(4, 4);
+
+    layer.debug = true;
+    map.setCollisionBetween(0, 999, layer);
 }
