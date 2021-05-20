@@ -8,10 +8,26 @@ let platforms;
 let ground;
 let isGrounded = false;
 let isWalking = false;
+let isFlipped = false; //Is he looking left?
+let playerScale = 2; 
 
-let level_1 = true;
+const WORLD_WIDTH = 100 * 16; //Get from Tiled
+const WORLD_HEIGHT = 24 * 16; //Get from Tiled
+
+let map;
+let layer;
+let tileset;
+
+let size = new Phaser.Rectangle();
+let zoomAmount = 0;
+
+
+let level_1 = false;
 let level_1_created = false;
-let playerScale = 2; //TODO REMOVE
+let level_2 = false;
+let level_2_created = false;
+let level_3 = false;
+let level_3_created = false;
 
 
 let playState = {
@@ -21,8 +37,12 @@ let playState = {
 };
 
 function preloadPlay() {
-    game.load.image('player','/assets/imgs/WhiteSquare.jpg');
-    game.load.image('ground','/assets/imgs/GreenSquare.png');
+    //game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
+
+    game.load.image('bgMain', './assets/imgs/bgMain.jpg');
+
+    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', './assets/imgs/Terrain.png');
 
     //------PONG--------------------------------------------
     game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
@@ -31,16 +51,20 @@ function preloadPlay() {
 
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
-    game.load.image('bgMain', './assets/imgs/bgMain.jpg');
+    //game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 }
 
 function createPlay() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    createCameraSet();
     createPlayer();
-    createPlatforms();
+    // createPlatforms();
+    createLevel();
     createKeyControls();
+
+    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
 function createKeyControls() {
@@ -48,7 +72,8 @@ function createKeyControls() {
 }
 
 function updatePlay() {
-    isGrounded = game.physics.arcade.collide(player, platforms);
+    isGrounded = game.physics.arcade.collide(player, layer);
+    //isGrounded = game.physics.arcade.collide(player, platforms);
 
     if (level_1){
 
@@ -87,10 +112,29 @@ function playerMovement() {
         }
         player.body.velocity.x = 0; //change velocity on x to 0.
     }
-    if (cursors.up.isDown && isGrounded && player.body.touching.down){
+    //cursors.up.isDown && isGrounded && player.body.touching.down){
+    if (player.body.onFloor() && cursors.up.isDown){
         player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
         isGrounded = false;
     }
+}
+
+function createCameraSet(){
+    size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    game.camera.focusOnXY(0, 0);
+
+    game.camera.scale.x += zoomAmount;
+    game.camera.scale.y += zoomAmount;
+
+    game.camera.bounds.x = size.x * game.camera.scale.x;
+    game.camera.bounds.y = size.y * game.camera.scale.y;
+
+    game.camera.bounds.width = size.width * game.camera.scale.x;
+    game.camera.bounds.height = size.height * game.camera.scale.y;
+
+    game.stage.backgroundColor = '#18C4BC'; //Bluish
+
 }
 
 function createPlayer() {
@@ -115,13 +159,14 @@ function createPlayer() {
     player.enableBody = true;
 }
 
-function createPlatforms() {
-    
-    platforms = game.add.group();
-    platforms.enableBody = true;
+function createLevel() {
 
-    ground = game.add.sprite(0, GAME_HEIGHT - 50, 'ground');
-    platforms.add(ground);
-    ground.scale.setTo(20, 1);
-    ground.body.immovable = true;
+    map = game.add.tilemap('map');
+    map.addTilesetImage('Terrain', 'tiles');
+
+    map.setCollisionBetween(0, 60);
+
+    layer = map.createLayer('layer1');
+    layer.setScale(2, 2);
+    layer.resizeWorld();
 }
