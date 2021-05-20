@@ -2,13 +2,21 @@
 // Added to Fer's movement mechanic
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
-const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 10
-const TIMEOUT = 2000;
-const maxCorrectWords = 8;
+const PLAYER_JUMP_VELOCITY = 1000;
+const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
+const TIMEOUTNEXTWORD = 2000;
+const maxCorrectWords = 1;
 let ALIEN_DOWN_VELOCITY = 0.5;
 
-const PLAYER_JUMP_VELOCITY = 1700;
+
 let player;
+let cursors;
+let platforms;
+let ground;
+let isGrounded = false;
+
+let isWalking = false; //used to check if walking or not, and to set the proper anim.
+let playerScale = 2; //Scale of player.
 
 let alien;
 let timer;
@@ -23,10 +31,6 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
-let cursors;
-let platforms;
-let ground;
-let isGrounded = false;
 
 let playState = {
     preload: preloadPlay,
@@ -39,7 +43,13 @@ function preloadPlay() {
     game.load.image('player','/assets/imgs/WhiteSquare.jpg');
     game.load.image('ground','/assets/imgs/GreenSquare.png');
 
+    //Loading the spritesheet for the player
+    game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
+    game.load.image('bgMain', './assets/imgs/bgMain.jpg');
+    game.load.image('tiles', './assets/imgs/Terrain.png');
+
+    // PART B
     game.load.image('alien', '/assets/imgs/alien.png');
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
@@ -54,6 +64,7 @@ function preloadPlay() {
     game.load.image('snes', '/assets/imgs/consoles/snes.png');
 }
 
+// CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF
 function createPlay() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -86,34 +97,56 @@ function updatePlay() {
         alienMovement();
 }
 
+// PLAYER MOVEMENT
 function playerMovement() {
-
-    if (cursors.left.isDown)
+    if (cursors.left.isDown){
         player.body.velocity.x = -PLAYER_VELOCITY;
-    else if (cursors.right.isDown)
+        if (!isWalking){
+            isWalking = true;
+            player.scale.setTo(playerScale * -1, playerScale);
+            player.animations.play('walk');
+        }
+    }
+    else if (cursors.right.isDown){
+        if (!isWalking){
+            isWalking = true;
+            player.scale.setTo(playerScale, playerScale);
+            player.animations.play('walk');
+        }
         player.body.velocity.x = PLAYER_VELOCITY;
-    else player.body.velocity.x = 0;
-
+    }
+    else { //If nothing is pressed...
+        if (isWalking){
+            isWalking = false; //change bool to false 
+            player.animations.play('idle'); //trigger idle anim.
+        }
+        player.body.velocity.x = 0; //change velocity on x to 0.
+    }
     if (cursors.up.isDown && isGrounded && player.body.touching.down){
         player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
         isGrounded = false;
     }
 }
 
-
+// CREATE PLAYER
 function createPlayer() {
-
     let x = game.world.centerX;
     let y = game.world.height - 500;
 
     player = game.add.sprite(x, y, 'player');
+
+    //Create animations
+    player.animations.add('idle', [0, 1, 2, 3, 4, 5, 6, 7 ,8 ,9, 10], 12, true);
+    player.animations.add('walk', [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 12, true);
+
+    player.animations.play('idle');
     player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(0.2, 0.2);
+    player.scale.setTo(playerScale, playerScale);
 
     game.physics.arcade.enable(player);
 
-    player.body.gravity.y = 4000;
-    //player.body.bounce.y = 0.2;
+    player.body.gravity.y = 1400;
+    player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
 }
@@ -125,7 +158,7 @@ function createPlatforms() {
 
     ground = game.add.sprite(0, GAME_HEIGHT - 50, 'ground');
     platforms.add(ground);
-    ground.scale.setTo(20, 1);
+    ground.scale.setTo(0.8, 1);
     ground.body.immovable = true;
 }
 
@@ -146,7 +179,7 @@ function wordTimeOut() {
     game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
     ALIEN_DOWN_VELOCITY = 0;
-    setTimeout(clearWordScreen, TIMEOUT);
+    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
 }
 // When the word is completed
 function wordCorrectAnswer() {
@@ -154,7 +187,7 @@ function wordCorrectAnswer() {
     game.add.tween(correct).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
     ALIEN_DOWN_VELOCITY = 0;
-    setTimeout(clearWordScreen, TIMEOUT);
+    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
 }
 
 // Restart error and correct sprites and alien position
