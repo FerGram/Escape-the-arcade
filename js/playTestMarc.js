@@ -3,7 +3,7 @@
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
 const PLAYER_JUMP_VELOCITY = 1000;
-const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
+const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 10
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 1;
 let ALIEN_DOWN_VELOCITY = 0.5;
@@ -18,6 +18,12 @@ let isGrounded = false;
 let isWalking = false; //used to check if walking or not, and to set the proper anim.
 let playerScale = 2; //Scale of player.
 
+let HUD;
+let HUDupdate;
+let keyboardSounds;
+let correctSound;
+let errorSound;
+let remainingTime = DISAPPEARANCE_TIME/1000;
 let alien;
 let timer;
 let error;  // incorrect answer sprite
@@ -31,6 +37,9 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
+
+let movingPlatforms = [];
+let platform;
 
 let playState = {
     preload: preloadPlay,
@@ -62,9 +71,14 @@ function preloadPlay() {
     game.load.image('gameboy', '/assets/imgs/consoles/gameboy.png');
     game.load.image('playstation two', '/assets/imgs/consoles/playstationTwo.png');
     game.load.image('snes', '/assets/imgs/consoles/snes.png');
+
+    game.load.audio('correctSound', '/assets/sounds/correct.mp3');
+    game.load.audio('incorrectSound', '/assets/sounds/error.mp3');
+    game.load.audio('keyboardSound', '/assets/sounds/keyboard.mp3');
+    
 }
 
-// CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF
+// --------CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF----------
 function createPlay() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -73,15 +87,22 @@ function createPlay() {
     createAlien();
     createPlatforms();
     createKeyControls();
-
+    createSounds();
     // Only shuffle the first time around
     if(correctAnswers == 0){
         shuffle(options);
         console.log(options);
     }
+
+    // Add HUD for remaining time
+    HUD = game.add.text(50, 0, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+    HUDupdate = setInterval(updateHUD, 1000);
+    
     createTypeGame();
     game.world.setBounds(0, 0, 2000, GAME_HEIGHT);
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+   
 }
 
 function createKeyControls() {
@@ -152,7 +173,6 @@ function createPlayer() {
 }
 
 function createPlatforms() {
-    
     platforms = game.add.group();
     platforms.enableBody = true;
 
@@ -160,9 +180,40 @@ function createPlatforms() {
     platforms.add(ground);
     ground.scale.setTo(0.8, 1);
     ground.body.immovable = true;
+
+    for (let i = 1; i <= 3; i++) {
+        platform = game.add.sprite(ground.width + 50*(i*3), GAME_HEIGHT - 50, 'ground');
+        platform.scale.setTo(0.1, 0.1);
+        platforms.add(platform);
+        platform.body.immovable = true;
+        platform.body.onCollide = new Phaser.Signal();
+        platform.body.onCollide.add(movePlatform, this);
+
+        movingPlatforms.push(platform);
+    }
+}
+
+    // E S T O  E S  M U Y  I N T E R E S A N T E
+function createSounds() {
+    keyboardSounds = game.add.sound('keyboardSound');
+    keyboardSounds.allowMultiple = true;
+    keyboardSounds.addMarker('1', 0, 0.2);
+    keyboardSounds.addMarker('2', 0.5, 0.2);
+    keyboardSounds.addMarker('3', 1, 0.2);
+    keyboardSounds.addMarker('4', 1.5, 0.2);
+
+    correctSound = game.add.sound('correctSound');
+    errorSound = game.add.sound('incorrectSound');
 }
 
 // NUEVO
+// PARTE C
+function movePlatform(p) {
+    p.body.velocity.x = 200;
+    p.body.onCollide = null;
+}
+
+// PARTE B
 function createAlien() {
     alien = game.add.sprite(player.x + 100, 0, 'alien');
     alien.scale.setTo(0.3);
@@ -174,6 +225,8 @@ function alienMovement() {
 
 // When the word is not completed
 function wordTimeOut() {
+    errorSound.play();
+    clearInterval(HUDupdate);
     game.input.keyboard.enabled = false;
     error.alpha = 1;
     game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
@@ -183,6 +236,8 @@ function wordTimeOut() {
 }
 // When the word is completed
 function wordCorrectAnswer() {
+    correctSound.play();
+    clearInterval(HUDupdate);
     correct.alpha = 1;
     game.add.tween(correct).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
@@ -200,10 +255,19 @@ function clearWordScreen() {
     restartTypeGame();
 }
 
+//
+function updateHUD() {
+    remainingTime -= 1;
+    HUD.setText('Remaining time: ' + remainingTime);
+}
+
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
     if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
+
+        keyboardSounds.play(String(Math.floor(Math.random() * 3 + 1))); // play sound
+
         let newText = typing.text;
         newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
         typing.setText(newText.toUpperCase());     // Show the word in upper case  
@@ -263,6 +327,7 @@ function createTypeGame() {
     correct.scale.setTo(0.1);
     correct.alpha = 0;
 
+    // Introduce the event for the kayboard
     game.input.keyboard.onDownCallback = getKeyboardInput; // Calling getKeyboardInput when a key is pressed
 
     // Show the current console to be guessed
@@ -303,11 +368,16 @@ function restartTypeGame() {
 
         createAlien();
         createTypeGame();
-   
+
         game.input.keyboard.enabled = true;
+        remainingTime = DISAPPEARANCE_TIME/1000;
+
+        HUD.destroy();
+        HUD = game.add.text(50, 0, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+        HUDupdate = setInterval(updateHUD, 1000);
     }
     else {
-
+        HUD.destroy();
         consoleSprite.destroy();
         timer.destroy();
         alien.destroy();
