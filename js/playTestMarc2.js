@@ -2,7 +2,7 @@
 // Added to Fer's movement mechanic
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
-const PLAYER_JUMP_VELOCITY = 1000;
+const PLAYER_JUMP_VELOCITY = 500;
 const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 10
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 1;
@@ -117,7 +117,7 @@ function createKeyControls() {
 
 function updatePlay() {
 
-    isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms);
+    isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms) || game.physics.arcade.collide(player, stationaryPlatforms);
     if(true) { //correctAnswers >= maxCorrectWords
         playerMovement();
          // Part C
@@ -126,20 +126,18 @@ function updatePlay() {
    else
         alienMovement();
 
-
 }
 
 function collisionOfPlatforms(movPlat, statPlat){
-        movPlat.body.velocity.x = 0;
-        console.log("Colliding");
-        firstCol = true;
-        posX = movPlat.x;
-        //thirdWidth = .bounds.size.x/3;
-        game.add.tween(movPlat).to({x:posX + 43}, 200, "Linear", true);
-        //statPlat.body.velocity.x = 0;
-        movingPlatforms.removeChildAt(0);
-        stationaryPlatforms.add(movPlat);
-
+    movPlat.body.velocity.x = 0;
+    console.log("Colliding");
+    firstCol = true;
+    posX = movPlat.x;
+    //thirdWidth = .bounds.size.x/3;
+    game.add.tween(movPlat).to({x:posX + 43}, 200, "Linear", true);
+    //statPlat.body.velocity.x = 0;
+    movingPlatforms.removeChildAt(0);
+    platforms.add(movPlat);
 }
 
 // PLAYER MOVEMENT
