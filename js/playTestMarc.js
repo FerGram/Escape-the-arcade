@@ -11,9 +11,15 @@ let ALIEN_DOWN_VELOCITY = 0.5;
 
 let player;
 let cursors;
+
 let platforms;
+let movingPlatforms;;
+let stationaryPlatforms;
+
 let ground;
 let isGrounded = false;
+
+
 
 let isWalking = false; //used to check if walking or not, and to set the proper anim.
 let playerScale = 2; //Scale of player.
@@ -37,10 +43,6 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
-
-let movingPlatforms = [];
-let platform;
-
 let playState = {
     preload: preloadPlay,
     create: createPlay,
@@ -49,7 +51,7 @@ let playState = {
 
 function preloadPlay() {
 
-    game.load.image('player','/assets/imgs/WhiteSquare.jpg');
+    game.load.image('ground2','/assets/imgs/WhiteSquare.jpg');
     game.load.image('ground','/assets/imgs/GreenSquare.png');
 
     //Loading the spritesheet for the player
@@ -111,11 +113,16 @@ function createKeyControls() {
 
 function updatePlay() {
 
-    isGrounded = game.physics.arcade.collide(player, platforms);
-    if(correctAnswers >= maxCorrectWords)
+    isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms);
+    if(correctAnswers >= maxCorrectWords) {
         playerMovement(); 
+         // Part C
+        checkNextPlatform();
+    }
    else
         alienMovement();
+   
+    
 }
 
 // PLAYER MOVEMENT
@@ -176,20 +183,34 @@ function createPlatforms() {
     platforms = game.add.group();
     platforms.enableBody = true;
 
+    stationaryPlatforms = game.add.group();
+    stationaryPlatforms.enableBody = true;
+
+    movingPlatforms = game.add.group();
+    movingPlatforms.enableBody = true;
+
     ground = game.add.sprite(0, GAME_HEIGHT - 50, 'ground');
     platforms.add(ground);
     ground.scale.setTo(0.8, 1);
     ground.body.immovable = true;
 
+    
+    //Instance of the platform to be
+    let platform;
+    let stationaryPlatform;
+
     for (let i = 1; i <= 3; i++) {
-        platform = game.add.sprite(ground.width + 50*(i*3), GAME_HEIGHT - 50, 'ground');
+        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 50, 'ground'); // Cuidado con la X
         platform.scale.setTo(0.1, 0.1);
-        platforms.add(platform);
+        movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
-        platform.body.onCollide.add(movePlatform, this);
+        platform.body.onCollide.add(movePlatform, this); 
 
-        movingPlatforms.push(platform);
+        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-50, 'ground2')
+        stationaryPlatform.scale.setTo(0.1, 0.1);
+        stationaryPlatform.immovable = true;
+        stationaryPlatforms.add(stationaryPlatform);
     }
 }
 
@@ -212,6 +233,39 @@ function movePlatform(p) {
     p.body.velocity.x = 200;
     p.body.onCollide = null;
 }
+
+function checkNextPlatform() {
+    if(game.physics.arcade.collide(movingPlatforms, stationaryPlatforms))
+        tweenPlatform(movingPlatforms.getChildAt(0), stationaryPlatforms.getChildAt(0));
+}
+
+function tweenPlatform(mp, sp) {
+    //game.add.tween(mp).to({velocity : 0}, 1000, "Linear", true);
+    
+    setTimeout(stopPlatform, 100, mp, sp);
+}
+
+function stopPlatform(mp, sp) {
+    mp.body.velocity.x = 0;
+    setTimeout(destroyPlatforms, 1000, mp, sp);
+}
+
+function destroyPlatforms(mp, sp) {
+    movingPlatforms.removeChildAt(0);
+    stationaryPlatforms.removeChildAt(0);
+
+    mp.destroy();
+    sp.destroy();
+}
+/* function platformOverStationary() {
+
+    
+    for(let i = 0; i < movingPlatformsArray.length; i ++) {
+        if(movingPlatformsArray[i].body.x + movingPlatformsArray[i].body.width >= stationaryPlatformsArray[i].body.x + stationaryPlatformsArray[i].body.x){
+            movingPlatformsArray[i].body.velocity.x = 0;
+    }
+   }
+} */
 
 // PARTE B
 function createAlien() {
