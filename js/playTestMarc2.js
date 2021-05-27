@@ -43,6 +43,8 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
+let firstCol = false;
+
 let playState = {
     preload: preloadPlay,
     create: createPlay,
@@ -65,6 +67,9 @@ function preloadPlay() {
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
 
+    game.load.image('tetris1', '/assets/imgs/tetris1.png')
+    game.load.image('tetris2', '/assets/imgs/tetris2.png')
+
     game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
     game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
     game.load.image('dreamcast', '/assets/imgs/consoles/dreamcast.png');
@@ -77,6 +82,7 @@ function preloadPlay() {
     game.load.audio('correctSound', '/assets/sounds/correct.mp3');
     game.load.audio('incorrectSound', '/assets/sounds/error.mp3');
     game.load.audio('keyboardSound', '/assets/sounds/keyboard.mp3');
+
 }
 
 // --------CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF----------
@@ -124,8 +130,16 @@ function updatePlay() {
 }
 
 function collisionOfPlatforms(movPlat, statPlat){
-    movPlat.body.velocity.x = 0;
-    //statPlat.body.velocity.x = 0;
+        movPlat.body.velocity.x = 0;
+        console.log("Colliding");
+        firstCol = true;
+        posX = movPlat.x;
+        //thirdWidth = .bounds.size.x/3;
+        game.add.tween(movPlat).to({x:posX + 43}, 200, "Linear", true);
+        //statPlat.body.velocity.x = 0;
+        movingPlatforms.removeChildAt(0);
+        stationaryPlatforms.add(movPlat);
+
 }
 
 // PLAYER MOVEMENT
@@ -203,17 +217,17 @@ function createPlatforms() {
     let stationaryPlatform;
 
     for (let i = 1; i <= 3; i++) {
-        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 50, 'ground'); // Cuidado con la X
-        platform.scale.setTo(0.1, 0.1);
+        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 128, 'tetris1'); // Cuidado con la X
+        //platform.scale.setTo(0.1, 0.1);
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
         platform.body.onCollide.add(movePlatform, this);
 
-        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-50, 'ground2')
+        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-128, 'tetris2')
 
         stationaryPlatforms.add(stationaryPlatform);
-        stationaryPlatform.scale.setTo(0.1, 0.1);
+        //stationaryPlatform.scale.setTo(0.1, 0.1);
         stationaryPlatform.body.immovable = true;
     }
 }

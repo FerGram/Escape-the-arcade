@@ -107,7 +107,7 @@ function createKeyControls() {
 
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
-    game.physics.arcade.overlap(bullets, )
+    game.physics.arcade.overlap(bullets, enemy.enemy);
     playerMovement();
     scrollBackground();
     gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
