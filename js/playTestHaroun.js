@@ -42,6 +42,8 @@ let rocks;
 let clouds;
 let trees;
 
+let enemy;
+
 let playState = {
     preload: preloadPlay,
     create: createPlay,
@@ -71,10 +73,6 @@ function preloadPlay() {
 function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    //game.camera.scale.setTo(3, 3);
-    //game.camera.visible = true;
-
-    //game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     game.camera.focusOnXY(0, 0);
@@ -88,12 +86,12 @@ function createPlay() {
     game.camera.bounds.width = size.width * game.camera.scale.x;
     game.camera.bounds.height = size.height * game.camera.scale.y;
 
-    //game.stage.backgroundColor = '#18C4BC'; //Bluish
-
-    createBackground();
     createLevel();
+    createBackground();
     createPlayer();
     createKeyControls();
+
+    createEnemy();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
@@ -104,15 +102,14 @@ function createPlay() {
 }
 
 function createKeyControls() {
-    //game.input.mouse.capture = false;
-
     cursors = game.input.keyboard.createCursorKeys();
 }
 
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
+    game.physics.arcade.overlap(bullets, )
     playerMovement();
-
+    scrollBackground();
     gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
     gunRotation();
 
@@ -135,7 +132,7 @@ function playerMovement() {
     if (cursors.left.isDown)
     {
         player.body.velocity.x = -PLAYER_VELOCITY;
-        scrollBackground(1); //oposite dir of player
+        //scrollBackground(); 
         if (!isWalking || !isFlipped){
             isWalking = true;
             isFlipped = true;
@@ -146,7 +143,7 @@ function playerMovement() {
     else if (cursors.right.isDown)
     {
         player.body.velocity.x = PLAYER_VELOCITY;
-        scrollBackground(-1); //oposite dir of player
+        //scrollBackground();
         if (!isWalking || isFlipped){
             isWalking = true;
             isFlipped = false;
@@ -190,11 +187,11 @@ function createGun(){
     gun.scale.setTo(-1 * gunScale, gunScale);
 }
 
-function createBullets(){
+function createBullets(){ //TODO Bullets break with world bounds, should break with screen bounds or should be a bigger pool
     bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
-    
+
     bullets.createMultiple(30, 'bullet');
     bullets.setAll('checkWorldBounds', true);
     bullets.setAll('outOfBoundsKill', true);
@@ -230,22 +227,28 @@ function renderPlay(){
 }
 
 function createBackground(){
-    sky = game.add.tileSprite(0, 0, 1920, 1080, 'sky');
-    rocks = game.add.tileSprite(0, 0, 1920, 1080, 'rocks');
-    clouds = game.add.tileSprite(0, 0, 1920, 1080, 'clouds');
-    trees = game.add.tileSprite(0, 0, 1920, 1080, 'trees');
+    sky = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'sky');
+    rocks = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'rocks');
+    clouds = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'clouds');
+    trees = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'trees');
+
+    trees.sendToBack();
+    clouds.sendToBack();
+    rocks.sendToBack();
+    sky.sendToBack();
 
     sky.fixedToCamera = true;
     rocks.fixedToCamera = true;
     clouds.fixedToCamera = true;
     trees.fixedToCamera = true;
+
 }
 
-function scrollBackground(dir){
-    sky.tilePosition.x += 1 * dir;
-    rocks.tilePosition.x += 2 * dir;
-    clouds.tilePosition.x += 3 * dir;
-    trees.tilePosition.x += 4 * dir;
+function scrollBackground(){
+    sky.tilePosition.x = game.camera.x * -0.1;
+    rocks.tilePosition.x = game.camera.x * -0.2;
+    clouds.tilePosition.x = game.camera.x * -0.3;
+    trees.tilePosition.x = game.camera.x * -0.4;
 }
 
 function shootAK47(){
@@ -261,7 +264,21 @@ function shootAK47(){
         bullet.rotation = gun.rotation;
         game.physics.arcade.moveToPointer(bullet, 700);
     }
-
-
 }
 
+function createEnemy(){
+    enemy = new Enemy1(game.add.sprite(320, 320, 'player'));
+    game.physics.arcade.enable(enemy.obj);
+
+    enemy.obj.body.linearDamping = 1;
+
+    enemy.obj.body.gravity = 0;
+}
+
+class Enemy1{
+    constructor(enemy){
+        this.hp = 3;
+
+        this.obj = enemy;
+    }
+}
