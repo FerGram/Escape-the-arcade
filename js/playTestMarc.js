@@ -209,7 +209,7 @@ function createPlatforms() {
 
         stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-50, 'ground2')
         stationaryPlatform.scale.setTo(0.1, 0.1);
-        stationaryPlatform.immovable = true;
+        stationaryPlatform.body.immovable = true;
         stationaryPlatforms.add(stationaryPlatform);
     }
 }

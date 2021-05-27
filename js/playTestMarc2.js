@@ -305,7 +305,7 @@ function getKeyboardInput(e) {
 
     if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
 
-        keyboardSounds.play(String(Math.floor(Math.random() * 3 + 1))); // play sound
+        keyboardSounds.play(String(Math.floor(Math.random() * 4 + 1))); // play sound
 
         let newText = typing.text;
         newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
