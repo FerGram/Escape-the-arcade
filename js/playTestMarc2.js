@@ -2,7 +2,7 @@
 // Added to Fer's movement mechanic
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
-const PLAYER_JUMP_VELOCITY = 1000;
+const PLAYER_JUMP_VELOCITY = 500;
 const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 10
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 1;
@@ -43,6 +43,8 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
+let firstCol = false;
+
 let playState = {
     preload: preloadPlay,
     create: createPlay,
@@ -65,6 +67,9 @@ function preloadPlay() {
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
 
+    game.load.image('tetris1', '/assets/imgs/tetris1.png')
+    game.load.image('tetris2', '/assets/imgs/tetris2.png')
+
     game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
     game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
     game.load.image('dreamcast', '/assets/imgs/consoles/dreamcast.png');
@@ -77,7 +82,7 @@ function preloadPlay() {
     game.load.audio('correctSound', '/assets/sounds/correct.mp3');
     game.load.audio('incorrectSound', '/assets/sounds/error.mp3');
     game.load.audio('keyboardSound', '/assets/sounds/keyboard.mp3');
-    
+
 }
 
 // --------CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF----------
@@ -99,12 +104,11 @@ function createPlay() {
     // Add HUD for remaining time
     HUD = game.add.text(50, 0, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
     HUDupdate = setInterval(updateHUD, 1000);
-    
+
     createTypeGame();
     game.world.setBounds(0, 0, 2000, GAME_HEIGHT);
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
-   
 }
 
 function createKeyControls() {
@@ -113,16 +117,27 @@ function createKeyControls() {
 
 function updatePlay() {
 
-    isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms);
-    if(correctAnswers >= maxCorrectWords) {
-        playerMovement(); 
+    isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms) || game.physics.arcade.collide(player, stationaryPlatforms);
+    if(true) { //correctAnswers >= maxCorrectWords
+        playerMovement();
          // Part C
-        checkNextPlatform();
+         game.physics.arcade.overlap(movingPlatforms, stationaryPlatforms, collisionOfPlatforms, null, this)
     }
    else
         alienMovement();
-   
-    
+
+}
+
+function collisionOfPlatforms(movPlat, statPlat){
+    movPlat.body.velocity.x = 0;
+    console.log("Colliding");
+    firstCol = true;
+    posX = movPlat.x;
+    //thirdWidth = .bounds.size.x/3;
+    game.add.tween(movPlat).to({x:posX + 43}, 200, "Linear", true);
+    //statPlat.body.velocity.x = 0;
+    movingPlatforms.removeChildAt(0);
+    platforms.add(movPlat);
 }
 
 // PLAYER MOVEMENT
@@ -145,7 +160,7 @@ function playerMovement() {
     }
     else { //If nothing is pressed...
         if (isWalking){
-            isWalking = false; //change bool to false 
+            isWalking = false; //change bool to false
             player.animations.play('idle'); //trigger idle anim.
         }
         player.body.velocity.x = 0; //change velocity on x to 0.
@@ -189,28 +204,29 @@ function createPlatforms() {
     movingPlatforms = game.add.group();
     movingPlatforms.enableBody = true;
 
-    ground = game.add.sprite(0, GAME_HEIGHT - 50, 'ground');
+    ground = game.add.sprite(100, GAME_HEIGHT - 50, 'ground');
     platforms.add(ground);
     ground.scale.setTo(0.8, 1);
     ground.body.immovable = true;
 
-    
+
     //Instance of the platform to be
     let platform;
     let stationaryPlatform;
 
     for (let i = 1; i <= 3; i++) {
-        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 50, 'ground'); // Cuidado con la X
-        platform.scale.setTo(0.1, 0.1);
+        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 128, 'tetris1'); // Cuidado con la X
+        //platform.scale.setTo(0.1, 0.1);
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
-        platform.body.onCollide.add(movePlatform, this); 
+        platform.body.onCollide.add(movePlatform, this);
 
-        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-50, 'ground2')
-        stationaryPlatform.scale.setTo(0.1, 0.1);
-        stationaryPlatform.body.immovable = true;
+        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-128, 'tetris2')
+
         stationaryPlatforms.add(stationaryPlatform);
+        //stationaryPlatform.scale.setTo(0.1, 0.1);
+        stationaryPlatform.body.immovable = true;
     }
 }
 
@@ -234,16 +250,6 @@ function movePlatform(p) {
     p.body.onCollide = null;
 }
 
-function checkNextPlatform() {
-    if(game.physics.arcade.collide(movingPlatforms, stationaryPlatforms))
-        tweenPlatform(movingPlatforms.getChildAt(0), stationaryPlatforms.getChildAt(0));
-}
-
-function tweenPlatform(mp, sp) {
-    //game.add.tween(mp).to({velocity : 0}, 1000, "Linear", true);
-    
-    setTimeout(stopPlatform, 100, mp, sp);
-}
 
 function stopPlatform(mp, sp) {
     mp.body.velocity.x = 0;
@@ -257,15 +263,6 @@ function destroyPlatforms(mp, sp) {
     mp.destroy();
     sp.destroy();
 }
-/* function platformOverStationary() {
-
-    
-    for(let i = 0; i < movingPlatformsArray.length; i ++) {
-        if(movingPlatformsArray[i].body.x + movingPlatformsArray[i].body.width >= stationaryPlatformsArray[i].body.x + stationaryPlatformsArray[i].body.x){
-            movingPlatformsArray[i].body.velocity.x = 0;
-    }
-   }
-} */
 
 // PARTE B
 function createAlien() {
@@ -320,12 +317,12 @@ function getKeyboardInput(e) {
 
     if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
 
-        keyboardSounds.play(String(Math.floor(Math.random() * 3 + 1))); // play sound
+        keyboardSounds.play(String(Math.floor(Math.random() * 4 + 1))); // play sound
 
         let newText = typing.text;
         newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
-        typing.setText(newText.toUpperCase());     // Show the word in upper case  
-        currentLetterIndex += 1; 
+        typing.setText(newText.toUpperCase());     // Show the word in upper case
+        currentLetterIndex += 1;
     }
     // Game flow
     if (currentLetterIndex == option.length) {
@@ -338,7 +335,7 @@ function getKeyboardInput(e) {
     else if (option[currentLetterIndex] == ' ') {
         let newText = typing.text;
             newText = newText.replace("_", " ");
-            typing.setText(newText.toUpperCase());     
+            typing.setText(newText.toUpperCase());
             currentLetterIndex += 1;
     }
 }
@@ -348,15 +345,15 @@ function shuffle(array) {
     let currentIndex = array.length, randomIndex, temporaryValue;
 
     while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex); 
+        randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
 
         temporaryValue = array[currentIndex];
         array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue; 
+        array[randomIndex] = temporaryValue;
     }
     return array;
-} 
+}
 
 // Creates timers and words
 function createTypeGame() {
@@ -404,7 +401,7 @@ function restartTypeGame() {
 
     if (correctAnswers < maxCorrectWords) {
 
-        
+
         if (currentWordIndex > 7) 
                 currentWordIndex = 0;
         // Only show the words that were not completed

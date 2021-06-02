@@ -1,4 +1,7 @@
 //Adding anims to Fer's playTest
+
+//const { TileSprite } = require("phaser-ce");
+
 //http://teseo.act.uji.es/~al394827/ProyectoWebTest/
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 300;
@@ -24,35 +27,52 @@ let gunScale = 1;
 let gunOffsetX = 2;
 let gunOffsetY = 7;
 
+let bullet;
+let bulletScale = 1;
+
+let fireSpeed = 50; //firerate
+let fireCooldown = 0; //var to wait between fires.
+
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
+
+//paralax
+let sky;
+let rocks;
+let clouds;
+let trees;
+
+let enemy;
 
 let playState = {
     preload: preloadPlay,
     create: createPlay,
-    update: updatePlay
+    update: updatePlay,
+    render: renderPlay
 };
 
 function preloadPlay() {
     //Loading the spritesheet for the player
     game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
-    game.load.image('bgMain', './assets/imgs/bgMain.jpg');
-
+    //Tilemap and level
     game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/Terrain.png');
 
+    //Ak-47 and bullet
     game.load.spritesheet('gun', './assets/imgs/AK47.png', 84, 30, 20);
+    game.load.image('bullet', './assets/imgs/bullet.png');
 
+    //paralax
+    game.load.image('sky', './assets/imgs/layer06_sky.png');
+    game.load.image('rocks', './assets/imgs/layer05_rocks.png');
+    game.load.image('clouds', './assets/imgs/layer04_clouds.png');
+    game.load.image('trees', './assets/imgs/layer03_trees.png');
 }
 
 function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    //game.camera.scale.setTo(3, 3);
-    //game.camera.visible = true;
-
-    //game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     game.camera.focusOnXY(0, 0);
@@ -66,17 +86,18 @@ function createPlay() {
     game.camera.bounds.width = size.width * game.camera.scale.x;
     game.camera.bounds.height = size.height * game.camera.scale.y;
 
-    game.stage.backgroundColor = '#18C4BC'; //Bluish
-
     createLevel();
+    createBackground();
     createPlayer();
     createKeyControls();
+
+    createEnemy();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
     createGun();
+    createBullets();
 
-    //player.addChild(gun);
     gun.position.setTo(gunOffsetX + 150, gunOffsetY + 150);
 }
 
@@ -86,11 +107,15 @@ function createKeyControls() {
 
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
+    game.physics.arcade.overlap(bullets, enemy.enemy);
     playerMovement();
-    //let playerPos = 
+    scrollBackground();
     gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
     gunRotation();
 
+    if (game.input.activePointer.leftButton.isDown){
+        shootAK47();
+    }
 }
 
 function playerMovement() {
@@ -107,6 +132,7 @@ function playerMovement() {
     if (cursors.left.isDown)
     {
         player.body.velocity.x = -PLAYER_VELOCITY;
+        //scrollBackground(); 
         if (!isWalking || !isFlipped){
             isWalking = true;
             isFlipped = true;
@@ -117,6 +143,7 @@ function playerMovement() {
     else if (cursors.right.isDown)
     {
         player.body.velocity.x = PLAYER_VELOCITY;
+        //scrollBackground();
         if (!isWalking || isFlipped){
             isWalking = true;
             isFlipped = false;
@@ -135,7 +162,7 @@ function playerMovement() {
 
 function createPlayer() {
 
-    player = game.add.sprite(32, 32, 'player');
+    player = game.add.sprite(32, 700, 'player');
     game.physics.arcade.enable(player);
     game.physics.arcade.gravity.y = 450;
 
@@ -154,12 +181,31 @@ function createPlayer() {
 
 function createGun(){
     gun = game.add.sprite(100, 100, 'gun');
+
+    gun.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 24, false);
     gun.anchor.setTo(0.5, 0.5);
     gun.scale.setTo(-1 * gunScale, gunScale);
 }
 
+function createBullets(){ //TODO Bullets break with world bounds, should break with screen bounds or should be a bigger pool
+    bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+    bullets.createMultiple(30, 'bullet');
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('body.allowGravity', false);
+}
+
 function gunRotation(){
     gun.rotation = game.physics.arcade.angleToPointer(gun);
+    if (gun.angle < -90 || gun.angle > 90){ //TODO add bool to check if it is already rotated.
+        gun.scale.setTo(gunScale * -1, gunScale * -1);
+    }
+    else{
+        gun.scale.setTo(gunScale * -1, gunScale);
+    }
 }
 
 function createLevel(){
@@ -173,4 +219,66 @@ function createLevel(){
     layer.setScale(2, 2);
     layer.resizeWorld();
     //layer.debug = true;
+}
+
+function renderPlay(){
+    game.debug.spriteInfo(gun, 32, 32);
+
+}
+
+function createBackground(){
+    sky = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'sky');
+    rocks = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'rocks');
+    clouds = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'clouds');
+    trees = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'trees');
+
+    trees.sendToBack();
+    clouds.sendToBack();
+    rocks.sendToBack();
+    sky.sendToBack();
+
+    sky.fixedToCamera = true;
+    rocks.fixedToCamera = true;
+    clouds.fixedToCamera = true;
+    trees.fixedToCamera = true;
+
+}
+
+function scrollBackground(){
+    sky.tilePosition.x = game.camera.x * -0.1;
+    rocks.tilePosition.x = game.camera.x * -0.2;
+    clouds.tilePosition.x = game.camera.x * -0.3;
+    trees.tilePosition.x = game.camera.x * -0.4;
+}
+
+function shootAK47(){
+
+    if (game.time.now > fireCooldown && bullets.countDead() > 0){
+        gun.animations.play('shoot');
+
+        fireCooldown = game.time.now + fireSpeed;
+
+        let bullet = bullets.getFirstDead();
+
+        bullet.reset(gun.x + 24, gun.y - 16);
+        bullet.rotation = gun.rotation;
+        game.physics.arcade.moveToPointer(bullet, 700);
+    }
+}
+
+function createEnemy(){
+    enemy = new Enemy1(game.add.sprite(320, 320, 'player'));
+    game.physics.arcade.enable(enemy.obj);
+
+    enemy.obj.body.linearDamping = 1;
+
+    enemy.obj.body.gravity = 0;
+}
+
+class Enemy1{
+    constructor(enemy){
+        this.hp = 3;
+
+        this.obj = enemy;
+    }
 }
