@@ -61,7 +61,7 @@ function createInit() {
 }
 
 function startPlay() {
-    game.state.start('play');
+    game.state.start('play'); //Change for testing other files
 }
 
 const FREQUENCY = 1000/30;

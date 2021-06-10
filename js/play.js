@@ -59,8 +59,12 @@ function preloadPlay() {
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('alien', '/assets/imgs/alien.png');
+    game.load.image('alien death', '/assets/imgs/alienDeath.png');
+    game.load.image('alien hit', '/assets/imgs/alienHit.png');
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
+
+    game.load.image('bullet', '/assets/imgs/bullet.png');
 
     game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
     game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
@@ -172,7 +176,7 @@ function playerMovement() {
             }
             player.body.velocity.x = 0; //change velocity on x to 0.
         }
-        //cursors.up.isDown && isGrounded && player.body.touching.down){
+        //Jumping
         if (player.body.onFloor() && cursors.up.isDown){
             player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
             isGrounded = false;
