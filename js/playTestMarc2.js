@@ -312,7 +312,7 @@ function clearWordScreen() {
     restartTypeGame();
 }
 
-//
+//  TIMER ON SCREEN UPDATE
 function updateHUD() {
     remainingTime -= 1;
     HUD.setText('Remaining time: ' + remainingTime);
@@ -321,7 +321,7 @@ function updateHUD() {
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
-    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
+    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there are no errors
 
         keyboardSounds.play(String(Math.floor(Math.random() * 4 + 1))); // play sound
 
