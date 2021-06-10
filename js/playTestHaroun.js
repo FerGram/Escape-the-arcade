@@ -26,6 +26,7 @@ let gun;
 let gunScale = 1;
 let gunOffsetX = 2;
 let gunOffsetY = 7;
+let gunTip;
 
 let bullet;
 let bulletScale = 1;
@@ -85,6 +86,7 @@ function createPlay() {
 
     game.camera.bounds.width = size.width * game.camera.scale.x;
     game.camera.bounds.height = size.height * game.camera.scale.y;
+
 
     createLevel();
     createBackground();
@@ -183,8 +185,14 @@ function createGun(){
     gun = game.add.sprite(100, 100, 'gun');
 
     gun.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 24, false);
-    gun.anchor.setTo(0.5, 0.5);
+    gun.anchor.setTo(0.7, 0.5);
     gun.scale.setTo(-1 * gunScale, gunScale);
+
+    gunTip = game.add.sprite(0, 0, 'bullet');
+    gunTip.anchor.setTo(0.5, 0.5);
+    gun.addChild(gunTip);
+    gunTip.position.x = -60;
+    gunTip.position.y = -10;
 }
 
 function createBullets(){ //TODO Bullets break with world bounds, should break with screen bounds or should be a bigger pool
@@ -192,9 +200,9 @@ function createBullets(){ //TODO Bullets break with world bounds, should break w
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-    bullets.createMultiple(30, 'bullet');
+    bullets.createMultiple(100, 'bullet');
     bullets.setAll('checkWorldBounds', true);
-    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('outOfBoundsKill', true); //TODO fix, only kills bullets when out of world bounds, not cameras, player runs of of bullets.
     bullets.setAll('body.allowGravity', false);
 }
 
@@ -260,7 +268,8 @@ function shootAK47(){
 
         let bullet = bullets.getFirstDead();
 
-        bullet.reset(gun.x + 24, gun.y - 16);
+        bullet.reset(gunTip.world.x, gunTip.world.y);
+
         bullet.rotation = gun.rotation;
         game.physics.arcade.moveToPointer(bullet, 700);
     }
