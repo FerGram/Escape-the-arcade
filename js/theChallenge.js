@@ -39,10 +39,7 @@ function createTheChallenge() {
 
 function updateTheChallenge() {
 
-    if(correctAnswers >= maxCorrectWords)
-        playerMovement(); 
-   else
-        alienMovement();
+    if(correctAnswers < maxCorrectWords) alienMovement(); 
 
     if (game.physics.arcade.overlap(alien, bullets)){ //Has a bullet collided with the alien?
 
@@ -60,9 +57,8 @@ function updateTheChallenge() {
     }
 }
 
-// NUEVO
 function createAlien() {
-    alien = game.add.sprite(player.x + 100, 200, 'alien');
+    alien = game.add.sprite(player.x + 680, 200, 'alien');
     alien.anchor.setTo(0.5, 0.5);
     alien.scale.setTo(0.1);
 
@@ -233,6 +229,8 @@ function restartTypeGame() {
         //game.state.start('hof');
         game.input.keyboard.enabled = true;
         game.input.keyboard.onDownCallback = null;
+
+        level_2_completed = true;
     }
 }
 

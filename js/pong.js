@@ -36,7 +36,6 @@ function createPONG() {
     game.time.events.add(4500, createScore);
     game.time.events.add(6000, createBall);
     game.time.events.add(6000, createTimer);
-    layer.debug = true;
 }
 
 function updatePONG() {
@@ -182,9 +181,9 @@ function createBall(){
 }
 
 function createScore(){
-    player1ScoreLabel = game.add.text(stageMiddle - 150, 100, '0', {font:'50px Arial', fill: "#fff"});
+    player1ScoreLabel = game.add.text(stageMiddle - 250, 100, '0', {font:'50px Arial', fill: "#fff"});
     player1ScoreLabel.anchor.setTo(0.5, 0.5);
-    player2ScoreLabel = game.add.text(stageMiddle + 150, 100, '0', {font:'50px Arial', fill: "#fff"});
+    player2ScoreLabel = game.add.text(stageMiddle + 250, 100, '0', {font:'50px Arial', fill: "#fff"});
     player2ScoreLabel.anchor.setTo(0.5, 0.5);
 }
 

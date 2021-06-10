@@ -154,7 +154,7 @@ function createHallLevel() {
 
 function tweenPlayer(){
     
-    game.add.tween(player).to( { x: arcadeMachine.x + 100 }, 500, "Back.easeInOut", true, 0, 0, false);
+    //game.add.tween(player).to( { x: arcadeMachine.x + 100 }, 500, "Back.easeInOut", true, 0, 0, false);
     // game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     // game.add.tween(consoleSprite).to( { alpha: 1 }, 100, "Linear", true);
 

@@ -1,5 +1,5 @@
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 500;
+const PLAYER_VELOCITY = 1500; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 1000;
 
 let player;
@@ -33,6 +33,7 @@ let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
 
+let cameraTween;
 
 let playState = {
     preload: preloadPlay,
@@ -94,6 +95,7 @@ function createKeyControls() {
 
 function updatePlay() {
     isGrounded = game.physics.arcade.collide(player, layer);
+    
 
     //#region LEVEL 1
 
@@ -126,24 +128,34 @@ function updatePlay() {
     
     //#region LEVEL 2
 
-        //Set level_2 in progress           DEFAULT VALUES: 3450 & 3550
-        if (!level_2 & !level_2_completed & player.body.x > 3450 & player.body.x < 3550) level_2 = true; 
+        //Set level_2 in progress           DEFAULT VALUES: 5600 & 6200
+        if (!level_2 & !level_2_completed & player.body.x > 5600 & player.body.x < 6200) {
+
+            level_2 = true; 
+
+            letPlayerMove = false;
+            game.camera.unfollow();
+
+            cameraTween = game.add.tween(game.camera).to( { x: 5500 }, 2000, "Linear", true, 0, 0, false);
+            cameraTween.onComplete.add(function(){
+
+                level_2_created = true;
+                createTheChallenge();
+            });
+        }
 
         //Set level_2 completed
         if (level_2_completed & level_2) {
+
             level_2 = false;
+            letPlayerMove = true;
+            game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
         }
 
         //Update level_2
         if (level_2){
 
-            if(!level_2_created) {
-                
-                createTheChallenge();
-                level_2_created = true;
-            }
-
-            updateTheChallenge();
+            if(level_2_created) updateTheChallenge();
         } 
 
     //#endregion
@@ -233,7 +245,7 @@ function createLevel() {
     map = game.add.tilemap('map');
     map.addTilesetImage('Terrain', 'tiles');
 
-    map.setCollisionBetween(0, 60);
+    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); //Update in BU2
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
