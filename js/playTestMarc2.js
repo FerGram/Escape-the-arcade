@@ -69,8 +69,12 @@ function preloadPlay() {
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
 
-    game.load.image('tetris1', '/assets/imgs/tetris1.png')
-    game.load.image('tetris2', '/assets/imgs/tetris2.png')
+    game.load.image('tetris1', '/assets/imgs/Tetris1.png');
+    game.load.image('tetris2', '/assets/imgs/Tetris2.png');
+    game.load.image('tetris3', '/assets/imgs/Tetris3.png');
+    game.load.image('tetris4', '/assets/imgs/Tetris4.png');
+    game.load.image('tetris5', '/assets/imgs/Tetris5.png');
+    game.load.image('tetris6', '/assets/imgs/Tetris6.png');
     game.load.audio('tetrisCollision', '/assets/sounds/tetris_clear.mp3');
     game.load.audio('tetrisMovement', '/assets/sounds/tetris_movement.mp3');
 
@@ -132,14 +136,17 @@ function updatePlay() {
 }
 
 function collisionOfPlatforms(movPlat, statPlat){
-    let timeToFit = 200;
+    let timeToFit = 200; // Time to get the pieces together
     movPlat.body.velocity.x = 0;
-    console.log("Colliding");
     firstCol = true;
     posX = movPlat.x;
-    //thirdWidth = .bounds.size.x/3;
-    game.add.tween(movPlat).to({x:posX + 43}, timeToFit, "Linear", true);
-    //statPlat.body.velocity.x = 0;
+
+    // Watch out for different lenghts of the pieces
+    if(movPlat.key != 'tetris3')
+        game.add.tween(movPlat).to({x:posX + 43}, timeToFit, "Linear", true);
+    else
+        game.add.tween(movPlat).to({x:posX + 86}, timeToFit, "Linear", true);
+
     movingPlatforms.removeChildAt(0);
     platforms.add(movPlat);
     tetrisSoundCollision.play();
@@ -228,17 +235,31 @@ function createPlatforms() {
     let stationaryPlatform;
 
     for (let i = 1; i <= 3; i++) {
-        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 128, 'tetris1'); // Cuidado con la X
+        let tetrisType = [];
+        // Choose a random type of piece for the tetris piece
+        let random = Math.floor(Math.random() * 4)
+        if (random == 0) {
+            tetrisType[0] = 'tetris1';
+            tetrisType[1] = 'tetris2';
+        }
+        else if(random == 1){
+            tetrisType[0] = 'tetris3';
+            tetrisType[1] = 'tetris4';
+        }
+        else {
+            tetrisType[0] = 'tetris5';
+            tetrisType[1] = 'tetris6';
+        }
+
+        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 128, tetrisType[0]); // Cuidado con la X
         //platform.scale.setTo(0.1, 0.1);
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
         platform.body.onCollide.add(movePlatform, this);
 
-        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-128, 'tetris2')
-
+        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-128, tetrisType[1]);
         stationaryPlatforms.add(stationaryPlatform);
-        //stationaryPlatform.scale.setTo(0.1, 0.1);
         stationaryPlatform.body.immovable = true;
     }
 }
@@ -255,7 +276,7 @@ function createSounds() {
     correctSound = game.add.sound('correctSound');
     errorSound = game.add.sound('incorrectSound');
     tetrisSoundCollision = game.add.sound('tetrisCollision');
-    tetrisSoundMovement = game.add.sound('terisMovement');
+    tetrisSoundMovement = game.add.sound('tetrisMovement');
 }
 
 // NUEVO
@@ -312,7 +333,7 @@ function clearWordScreen() {
     restartTypeGame();
 }
 
-//
+//  TIMER ON SCREEN UPDATE
 function updateHUD() {
     remainingTime -= 1;
     HUD.setText('Remaining time: ' + remainingTime);
@@ -321,7 +342,7 @@ function updateHUD() {
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
-    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
+    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there are no errors
 
         keyboardSounds.play(String(Math.floor(Math.random() * 4 + 1))); // play sound
 
