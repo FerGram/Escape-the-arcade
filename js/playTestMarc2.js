@@ -15,6 +15,8 @@ let cursors;
 let platforms;
 let movingPlatforms;;
 let stationaryPlatforms;
+let tetrisSoundCollision;
+let tetrisSoundMovement;
 
 let ground;
 let isGrounded = false;
@@ -69,6 +71,8 @@ function preloadPlay() {
 
     game.load.image('tetris1', '/assets/imgs/tetris1.png')
     game.load.image('tetris2', '/assets/imgs/tetris2.png')
+    game.load.audio('tetrisCollision', '/assets/sounds/tetris_clear.mp3');
+    game.load.audio('tetrisMovement', '/assets/sounds/tetris_movement.mp3');
 
     game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
     game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
@@ -118,28 +122,35 @@ function createKeyControls() {
 function updatePlay() {
 
     isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms);
-    if(true) { //correctAnswers >= maxCorrectWords
+    if(correctAnswers >= maxCorrectWords) { //correctAnswers >= maxCorrectWords
         playerMovement();
          // Part C
          game.physics.arcade.overlap(movingPlatforms, stationaryPlatforms, collisionOfPlatforms, null, this)
     }
    else
         alienMovement();
-
-
 }
 
 function collisionOfPlatforms(movPlat, statPlat){
-        movPlat.body.velocity.x = 0;
-        console.log("Colliding");
-        firstCol = true;
-        posX = movPlat.x;
-        //thirdWidth = .bounds.size.x/3;
-        game.add.tween(movPlat).to({x:posX + 43}, 200, "Linear", true);
-        //statPlat.body.velocity.x = 0;
-        movingPlatforms.removeChildAt(0);
-        stationaryPlatforms.add(movPlat);
+    let timeToFit = 200;
+    movPlat.body.velocity.x = 0;
+    console.log("Colliding");
+    firstCol = true;
+    posX = movPlat.x;
+    //thirdWidth = .bounds.size.x/3;
+    game.add.tween(movPlat).to({x:posX + 43}, timeToFit, "Linear", true);
+    //statPlat.body.velocity.x = 0;
+    movingPlatforms.removeChildAt(0);
+    platforms.add(movPlat);
+    tetrisSoundCollision.play();
+    setTimeout(disappearanceOfPlatforms, timeToFit + 500, movPlat, statPlat);
+}
 
+function disappearanceOfPlatforms(movPlat, statPlat) {
+    tetrisSoundMovement.play();
+    game.add.tween(movPlat).to({alpha:0}, 700, "Linear", true);
+    game.add.tween(statPlat).to({alpha:0}, 700, "Linear", true);
+    setTimeout(destroyPlatforms, 1500, movPlat, statPlat);   // destroy platforms when they disappear
 }
 
 // PLAYER MOVEMENT
@@ -243,6 +254,8 @@ function createSounds() {
 
     correctSound = game.add.sound('correctSound');
     errorSound = game.add.sound('incorrectSound');
+    tetrisSoundCollision = game.add.sound('tetrisCollision');
+    tetrisSoundMovement = game.add.sound('terisMovement');
 }
 
 // NUEVO
@@ -252,16 +265,7 @@ function movePlatform(p) {
     p.body.onCollide = null;
 }
 
-
-function stopPlatform(mp, sp) {
-    mp.body.velocity.x = 0;
-    setTimeout(destroyPlatforms, 1000, mp, sp);
-}
-
 function destroyPlatforms(mp, sp) {
-    movingPlatforms.removeChildAt(0);
-    stationaryPlatforms.removeChildAt(0);
-
     mp.destroy();
     sp.destroy();
 }

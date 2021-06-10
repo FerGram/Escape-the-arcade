@@ -240,7 +240,7 @@ function checkNextPlatform() {
 }
 
 function tweenPlatform(mp, sp) {
-    //game.add.tween(mp).to({velocity : 0}, 1000, "Linear", true);
+    //game.add.tween(mp).to({x : 0}, 1000, "Linear", true);
     
     setTimeout(stopPlatform, 100, mp, sp);
 }
