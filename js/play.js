@@ -10,6 +10,7 @@ let isGrounded = false;
 let isWalking = false;
 let isFlipped = false; //Is he looking left?
 let playerScale = 2; 
+let letPlayerMove = true;
 
 const WORLD_WIDTH = 100 * 16; //Get from Tiled
 const WORLD_HEIGHT = 24 * 16; //Get from Tiled
@@ -24,10 +25,13 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
+let level_1_completed = true; //CHANGED TO TRUE JUST FOR DEBUGGING
 let level_2 = false;
 let level_2_created = false;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
+let level_3_completed = false;
 
 
 let playState = {
@@ -37,8 +41,8 @@ let playState = {
 };
 
 function preloadPlay() {
-    //game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
+    //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 
     game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
@@ -46,12 +50,26 @@ function preloadPlay() {
 
     //------PONG--------------------------------------------
     game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
+    game.load.image('fireball','/assets/imgs/RedSquare.jpg');
     game.load.image('middle','/assets/imgs/WhiteSquare.jpg');
     game.load.image('players','/assets/imgs/WhiteSquare.jpg');
 
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
-    //game.load.image('bgMain', './assets/imgs/bgMain.jpg');
+
+    //-----THE CHALLENGE-----------------------------------
+    game.load.image('alien', '/assets/imgs/alien.png');
+    game.load.image('error', '/assets/imgs/error.png');
+    game.load.image('correct', '/assets/imgs/Consolas.gif');
+
+    game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
+    game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
+    game.load.image('dreamcast', '/assets/imgs/consoles/dreamcast.png');
+    game.load.image('xbox', '/assets/imgs/consoles/xbox.png');
+    game.load.image('nes', '/assets/imgs/consoles/nes.png');
+    game.load.image('gameboy', '/assets/imgs/consoles/gameboy.png');
+    game.load.image('playstation two', '/assets/imgs/consoles/playstationTwo.png');
+    game.load.image('snes', '/assets/imgs/consoles/snes.png');
 }
 
 function createPlay() {
@@ -60,7 +78,6 @@ function createPlay() {
 
     createCameraSet();
     createPlayer();
-    // createPlatforms();
     createLevel();
     createKeyControls();
 
@@ -73,49 +90,97 @@ function createKeyControls() {
 
 function updatePlay() {
     isGrounded = game.physics.arcade.collide(player, layer);
-    //isGrounded = game.physics.arcade.collide(player, platforms);
 
-    if (level_1){
+    //#region LEVEL 1
 
-        if(!level_1_created) {
-            createPONG();
-            level_1_created = true;
+        //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
+        if (!level_1 & !level_1_completed & player.body.x > 1950 & player.body.x < 2050) level_1 = true;
+
+        //Set level_1 completed
+        if (level_1_completed & level_1) {
+            level_1 = false;
+            game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
         }
 
-        updatePONG();
-    } 
+        //Update level_1
+        if (level_1){
 
+            if(!level_1_created) {
+                letPlayerMove = false;
+                game.camera.unfollow();
+                game.time.events.add(6000, function()
+                                        {letPlayerMove = true;});
+
+                createPONG();
+                level_1_created = true;
+            }
+
+            updatePONG();
+        } 
+
+    //#endregion
+    
+    //#region LEVEL 2
+
+        //Set level_2 in progress           DEFAULT VALUES: 3450 & 3550
+        if (!level_2 & !level_2_completed & player.body.x > 3450 & player.body.x < 3550) level_2 = true; 
+
+        //Set level_2 completed
+        if (level_2_completed & level_2) {
+            level_2 = false;
+        }
+
+        //Update level_2
+        if (level_2){
+
+            if(!level_2_created) {
+                
+                createTheChallenge();
+                level_2_created = true;
+            }
+
+            updateTheChallenge();
+        } 
+
+    //#endregion
+    
     playerMovement();
 }
 
 function playerMovement() {
-    if (cursors.left.isDown){
-        player.body.velocity.x = -PLAYER_VELOCITY;
-        if (!isWalking){
-            isWalking = true;
-            player.scale.setTo(playerScale * -1, playerScale);
-            player.animations.play('walk');
+    if (letPlayerMove){
+        if (cursors.left.isDown){
+            player.body.velocity.x = -PLAYER_VELOCITY;
+            if (!isWalking){
+                isWalking = true;
+                player.scale.setTo(playerScale * -1, playerScale);
+                player.animations.play('walk');
+            }
+        }
+        else if (cursors.right.isDown){
+            if (!isWalking){
+                isWalking = true;
+                player.scale.setTo(playerScale, playerScale);
+                player.animations.play('walk');
+            }
+            player.body.velocity.x = PLAYER_VELOCITY;
+        }
+        else { //If nothing is pressed...
+            if (isWalking){
+                isWalking = false; //change bool to false 
+                player.animations.play('idle'); //trigger idle anim.
+            }
+            player.body.velocity.x = 0; //change velocity on x to 0.
+        }
+        //cursors.up.isDown && isGrounded && player.body.touching.down){
+        if (player.body.onFloor() && cursors.up.isDown){
+            player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
+            isGrounded = false;
         }
     }
-    else if (cursors.right.isDown){
-        if (!isWalking){
-            isWalking = true;
-            player.scale.setTo(playerScale, playerScale);
-            player.animations.play('walk');
-        }
-        player.body.velocity.x = PLAYER_VELOCITY;
-    }
-    else { //If nothing is pressed...
-        if (isWalking){
-            isWalking = false; //change bool to false 
-            player.animations.play('idle'); //trigger idle anim.
-        }
-        player.body.velocity.x = 0; //change velocity on x to 0.
-    }
-    //cursors.up.isDown && isGrounded && player.body.touching.down){
-    if (player.body.onFloor() && cursors.up.isDown){
-        player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
-        isGrounded = false;
+    else{
+        player.body.velocity.x = 0;
+        player.animations.play('idle');
     }
 }
 

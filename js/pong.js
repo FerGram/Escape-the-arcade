@@ -14,9 +14,12 @@ let player2Score = 0;
 let player1ScoreLabel, player2ScoreLabel;
 
 let canStartGame = false;
+let stageMiddle;
+let fireBall;
 
 const SPAWN_BALL_TIME = 7500; //In miliseconds
 const BALL_VELOCITY = 500;
+const FIREBALL_VELOCITY = 1.5;
 const X_OFFSET = 100;
 
 //-----------------------------------------------------
@@ -27,14 +30,13 @@ function createPONG() {
     pongGroup = game.add.group();
     pongGroup.enableBody = true;
 
-    //createPlatforms(); //MAYBE NOT NEEDED
-    
+    game.time.events.add(1000, createBlackBG);
     game.time.events.add(1500, createPongPlayers);
     game.time.events.add(3000, createStage);
     game.time.events.add(4500, createScore);
     game.time.events.add(6000, createBall);
     game.time.events.add(6000, createTimer);
-
+    layer.debug = true;
 }
 
 function updatePONG() {
@@ -44,16 +46,16 @@ function updatePONG() {
     ballMovement();
     pongPlayerMovement();
 
-    game.physics.arcade.collide(pongPlayer1, platforms);
-    game.physics.arcade.collide(pongPlayer2, platforms);
+    game.physics.arcade.collide(pongPlayer1, layer);
+    game.physics.arcade.collide(pongPlayer2, layer);
     game.physics.arcade.collide(player, pongPlayer1);
     game.physics.arcade.collide(player, pongPlayer2);
 
     if (game.physics.arcade.overlap(player, balls)){
-        console.log("OUCH!"); 
+        console.log("OUCH!");
         game.camera.shake(0.03, 250);
-    } 
-    
+    }
+
 }
 
 function ballMovement() {
@@ -64,20 +66,20 @@ function ballMovement() {
 
         //Collides with top/bottom limits
         else if (ball.body.blocked.up) ball.body.velocity.y = BALL_VELOCITY;
-        else if (game.physics.arcade.collide(ball, platforms)) ball.body.velocity.y = -BALL_VELOCITY;
+        else if (game.physics.arcade.collide(ball, layer)) ball.body.velocity.y = -BALL_VELOCITY;
 
         //Collides with left/right limits
-        else if (ball.body.blocked.left || ball.body.blocked.right) {
-            if (ball.body.blocked.left) {
+        else if (ball.body.x > pongPlayer2.body.x + 30 || ball.body.x < pongPlayer1.body.x - 30) {
+            if (ball.body.x < pongPlayer1.body.x - 30) {
                 player2Score++;
                 player2ScoreLabel.text = player2Score;
             }
-            if (ball.body.blocked.right){
+            if (ball.body.x > pongPlayer2.body.x + 30){
                 player1Score++;
                 player1ScoreLabel.text = player1Score;
             }
             resetBall(ball);
-        
+
         }
     });
 }
@@ -92,16 +94,16 @@ function pongPlayerMovement(){
         else if (ball.body.x > rightBall.body.x) rightBall = ball;
     });
 
-    if (leftBall.body.y >= pongPlayer1.y && leftBall.x < game.width/2) 
+    if (leftBall.body.y >= pongPlayer1.y && leftBall.x < stageMiddle)
         pongPlayer1.body.velocity.y = pongPlayer1Velocity;
     else pongPlayer1.body.velocity.y = -pongPlayer1Velocity;
 
-    if (rightBall.body.y >= pongPlayer2.y && rightBall.x > game.width/2) 
+    if (rightBall.body.y >= pongPlayer2.y && rightBall.x > stageMiddle)
         pongPlayer2.body.velocity.y = pongPlayer2Velocity;
     else pongPlayer2.body.velocity.y = -pongPlayer2Velocity;
 }
 
-function updateTimer(){ //This is an event callback (not in update method)
+function updateTimer(){ //This is a time event callback (not in update method)
 
     let currentTime = new Date();
     let timeDifference = currentTime.getTime() - timeStartPoint.getTime();
@@ -112,27 +114,34 @@ function updateTimer(){ //This is an event callback (not in update method)
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 15) stopGame();
+    if (minutes == 0 && seconds > 50) stopGame();
+}
+
+function createBlackBG(){
+    game.stage.backgroundColor = '#000000';
 }
 
 function createTimer(){
 
     gameTimer = game.time.events.loop(100, updateTimer);
     gameBallSpawner = game.time.events.loop(SPAWN_BALL_TIME, createBall);
+    fireBallSpawner = game.time.events.loop(SPAWN_BALL_TIME * 2, makeFireBall); //Make fire ball every 3 balls created
 
     timeStartPoint = new Date();
     canStartGame = true;
 
     game.world.bringToTop(player);
-    game.world.bringToTop(platforms);
+    game.world.bringToTop(layer);
 }
 
 function createPongPlayers() {
-    let x1 = X_OFFSET;
-    let y1 = game.world.height/2;
+    let x1 = game.camera.position.x + X_OFFSET;
+    let y1 = game.camera.position.y/2;
 
-    let x2 = game.world.width - X_OFFSET;
-    let y2 = game.world.height/2;
+    let x2 = game.camera.position.x + game.camera.width - X_OFFSET;
+    let y2 = game.camera.position.y/2;
+
+    stageMiddle = game.camera.position.x + game.camera.width/2;
 
     pongPlayer1 = game.add.sprite(x1, y1, 'players');
     pongPlayer1.anchor.setTo(0.5, 0.5);
@@ -155,13 +164,13 @@ function createPongPlayers() {
 
 function createBall(){
     let ball;
-    let x = game.world.width/2;
+    let x = stageMiddle;
     let y = game.world.height/2;
 
     ball = game.add.sprite(x, y, 'ball');
     ball.anchor.setTo(0.5, 0.5);
     ball.scale.setTo(0.03, 0.03);
-    
+
     game.physics.arcade.enable(ball);
     ball.enableBody = true;
     ball.body.collideWorldBounds = true;
@@ -173,41 +182,41 @@ function createBall(){
 }
 
 function createScore(){
-    player1ScoreLabel = game.add.text(game.width / 2 - 150, 40, '0', {font:'50px Arial', fill: "#fff"});
+    player1ScoreLabel = game.add.text(stageMiddle - 150, 100, '0', {font:'50px Arial', fill: "#fff"});
     player1ScoreLabel.anchor.setTo(0.5, 0.5);
-    player2ScoreLabel = game.add.text(game.width / 2 + 150, 40, '0', {font:'50px Arial', fill: "#fff"});
+    player2ScoreLabel = game.add.text(stageMiddle + 150, 100, '0', {font:'50px Arial', fill: "#fff"});
     player2ScoreLabel.anchor.setTo(0.5, 0.5);
 }
 
 function createStage(){
-    let middle = game.add.sprite(game.width / 2, 40, 'middle');
+    let middle = game.add.sprite(stageMiddle, 40, 'middle');
     middle.anchor.setTo(0.5, 0.5);
     middle.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(game.width / 2, game.height / 2, 'middle');
+    middle = game.add.sprite(stageMiddle, game.height / 2, 'middle');
     middle.anchor.setTo(0.5, 0.5);
     middle.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(game.width / 2, game.height / 4, 'middle');
-    middle.anchor.setTo(0.5, 0.5);
-    middle.scale.setTo(0.015, 0.1);
-    
-    middle = game.add.sprite(game.width / 2, game.height * 3 / 4, 'middle');
+    middle = game.add.sprite(stageMiddle, game.height / 4, 'middle');
     middle.anchor.setTo(0.5, 0.5);
     middle.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(game.width / 2, game.height - 40, 'middle');
+    middle = game.add.sprite(stageMiddle, game.height * 3 / 4, 'middle');
+    middle.anchor.setTo(0.5, 0.5);
+    middle.scale.setTo(0.015, 0.1);
+
+    middle = game.add.sprite(stageMiddle, game.height - 40, 'middle');
     middle.anchor.setTo(0.5, 0.5);
     middle.scale.setTo(0.015, 0.1);
 
     game.world.bringToTop(player);
-    game.world.bringToTop(platforms);
+    //game.world.bringToTop(platforms);
 
 }
 
 function resetBall(ball) {
 
-    ball.body.x = game.world.width/2;
+    ball.body.x = stageMiddle;
     ball.body.y = game.world.height/2;
     ball.body.velocity.x = BALL_VELOCITY * (Math.random() > 0.5? -1 : 1);
     ball.body.velocity.y = BALL_VELOCITY * (Math.random() > 0.5? -1 : 1);
@@ -225,16 +234,40 @@ function stopGame(){
     pongPlayer1.body.velocity = 0;
     pongPlayer2.body.velocity = 0;
 
-    let endtext = game.add.text(game.width/2, game.height/2 - 150, 
-        (player1Score > player2Score? "Player 1 WINS" : "Player 2 WINS"), 
+
+    let endtext = game.add.text(stageMiddle, game.height/2 - 150,
+        (player1Score > player2Score? "Player 1 WINS" : "Player 2 WINS"),
         {font:'50px Arial', fill: "#FF0000"});
     endtext.anchor.setTo(0.5, 0.5);
+
+
+    level_1_completed = true;
+    game.stage.backgroundColor = '#18C4BC';
 }
 
-function createLevel(){ //WHERE TO PUT???????????
-    game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    let bg = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bgMain');
-    bg.scrollFactorX = 0.7;
-    bg.scrollFactorY = 0.7;
+function makeFireBall(){
 
+    fireBall = balls.children[0];
+    fireBall.loadTexture('fireball');
+
+    game.time.events.add(1000, moveFireBall);
+    game.time.events.add(2000, function(){fireBall.loadTexture('ball');});
 }
+
+function moveFireBall(){
+
+    //Move towards player
+    fireBall.body.velocity.x = (player.body.x - fireBall.body.x) * FIREBALL_VELOCITY;
+    fireBall.body.velocity.y = (player.body.y - fireBall.body.y) * FIREBALL_VELOCITY;
+}
+
+
+
+
+
+
+
+
+
+
+

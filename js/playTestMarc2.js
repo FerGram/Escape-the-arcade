@@ -2,7 +2,7 @@
 // Added to Fer's movement mechanic
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
-const PLAYER_JUMP_VELOCITY = 1000;
+const PLAYER_JUMP_VELOCITY = 500;
 const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 10
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 1;
