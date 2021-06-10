@@ -38,6 +38,8 @@ function startGame() {
     game.state.add('init', initState);
     // About Screen
     game.state.add('instructions', instructionsState);
+    // Hall Screen
+    game.state.add('hall', hallState);
     // Gameplay Screen
     game.state.add('play', playState);
     // Some other screen

@@ -3,6 +3,7 @@
 const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 4;
+const BULLET_VELOCITY = -800;
 let ALIEN_DOWN_VELOCITY = 0.5;
 
 let alien;
@@ -18,12 +19,15 @@ let doneWords = [false, false, false, false, false, false, false, false]; // For
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
 
+let bullets; //Phaser group containing bullet pool
+let bulletCounter = 0;
 
 
 // CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF
 function createTheChallenge() {
 
     createAlien();
+    createBullets();
 
     // Only shuffle the first time around
     if(correctAnswers == 0){
@@ -39,12 +43,31 @@ function updateTheChallenge() {
         playerMovement(); 
    else
         alienMovement();
+
+    if (game.physics.arcade.overlap(alien, bullets)){ //Has a bullet collided with the alien?
+
+        bullets.children.forEach(bullet => {
+
+            if (game.physics.arcade.overlap(alien, bullet)){ //Then which one? Reset it
+                bullet.body.velocity.y = 0;
+                bullet.alpha = 0;
+                bullet.y = 700;
+            }
+        });
+
+        alien.loadTexture('alien hit');
+        game.time.events.add(300, function(){alien.loadTexture('alien');})
+    }
 }
 
 // NUEVO
 function createAlien() {
-    alien = game.add.sprite(player.x + 100, 0, 'alien');
-    alien.scale.setTo(0.3);
+    alien = game.add.sprite(player.x + 100, 200, 'alien');
+    alien.anchor.setTo(0.5, 0.5);
+    alien.scale.setTo(0.1);
+
+    game.physics.arcade.enable(alien);
+    alien.enableBody = true;
 }
 
 function alienMovement() {
@@ -66,7 +89,16 @@ function wordCorrectAnswer() {
     game.add.tween(correct).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
     ALIEN_DOWN_VELOCITY = 0;
-    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
+
+    bullets.children.forEach(bullet => { //Reset every bullet
+        bullet.body.velocity.y = 0;
+        bullet.alpha = 0;
+        bullet.y = 700;
+    });
+
+    game.time.events.add(310, function(){alien.loadTexture('alien death')});
+    game.time.events.add(500, function(){setTimeout(clearWordScreen, TIMEOUTNEXTWORD)});
+
 }
 
 // Restart error and correct sprites and alien position
@@ -76,6 +108,7 @@ function clearWordScreen() {
     timer.resume();
     alien.y = 0;
     ALIEN_DOWN_VELOCITY = 0.5;
+    alien.loadTexture('alien');
     restartTypeGame();
 }
 
@@ -87,6 +120,8 @@ function getKeyboardInput(e) {
         newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
         typing.setText(newText.toUpperCase());     // Show the word in upper case  
         currentLetterIndex += 1; 
+
+        shootAlien();
     }
     // Game flow
     if (currentLetterIndex == option.length) {
@@ -199,4 +234,31 @@ function restartTypeGame() {
         game.input.keyboard.enabled = true;
         game.input.keyboard.onDownCallback = null;
     }
+}
+
+function createBullets(){
+
+    bullets = game.add.group();
+
+    for (let i = 0; i < 15; i++){ //Populate the group with 15 bullets (to avoid killing and spawning repeatedly)
+
+        let bullet = game.add.sprite(alien.x, 700, 'bullet');
+
+        bullet.anchor.setTo(0.5, 0.5);
+        bullet.scale.setTo(0.015, 0.03);
+        bullet.alpha = 0;
+
+        game.physics.arcade.enable(bullet);
+        bullet.enableBody = true;
+
+        bullets.add(bullet);
+    }
+}
+
+function shootAlien(){
+
+    bulletCounter = (bulletCounter + 1) % 15; //Cycle counter
+
+    bullets.children[bulletCounter].alpha = 1;
+    bullets.children[bulletCounter].body.velocity.y = BULLET_VELOCITY;
 }
