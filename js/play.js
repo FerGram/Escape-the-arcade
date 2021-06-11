@@ -48,8 +48,8 @@ function preloadPlay() {
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 
-    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/imgs/Terrain.png');
+    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', './assets/imgs/TF.png');
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 
     //------PONG--------------------------------------------
@@ -99,6 +99,8 @@ function createKeyControls() {
 function updatePlay() {
     isGrounded = game.physics.arcade.collide(player, layer);
 
+    console.log(player.x);
+
     //#region LEVEL 1
 
         //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
@@ -131,7 +133,7 @@ function updatePlay() {
     //#region LEVEL 2
 
         //Set level_2 in progress           DEFAULT VALUES: 5600 & 6200
-        if (!level_2 & !level_2_completed & player.body.x > 5600 & player.body.x < 6200) {
+        if (!level_2 & !level_2_completed & player.body.x > 5950 & player.body.x < 6900) {
 
             level_2 = true; 
 
@@ -163,7 +165,7 @@ function updatePlay() {
     //#endregion
 
     //END GAME
-    if (player.body.x > 9425 & !tweeningPlayer){
+    if (player.body.x > 10800 & !tweeningPlayer){
 
         letPlayerMove = false;
         tweeningPlayer = true;
@@ -257,16 +259,24 @@ function createPlayer() {
 function createLevel() {
 
     map = game.add.tilemap('map');
-    map.addTilesetImage('Terrain', 'tiles');
+    map.addTilesetImage('TF', 'tiles');
 
     //Sets collision to all tile layers except the ones below
     map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); 
+
+    layer = map.createLayer('layer3');
+    layer.setScale(2, 2);
+    layer.resizeWorld();
+
+    layer = map.createLayer('layer2');
+    layer.setScale(2, 2);
+    layer.resizeWorld();
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
 
-    arcadeMachine = game.add.sprite(9550, 715, 'arcadeMachine');
+    arcadeMachine = game.add.sprite(10900, 715, 'arcadeMachine');
     arcadeMachine.anchor.setTo(0.5, 0.5);
     arcadeMachine.scale.setTo(0.25, 0.25);
 }
