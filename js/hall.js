@@ -5,12 +5,12 @@ let playerVelocityReducer = 1;
 let playerJumpVelocityReducer = 1;
 
 let hallState = {
-    preload: preloadPlay,
-    create: createPlay,
-    update: updatePlay
+    preload: preloadHall,
+    create: createHall,
+    update: updateHall
 };
 
-function preloadPlay() { //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TODO CHANGE SPRITES
+function preloadHall() {
 
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
@@ -20,27 +20,27 @@ function preloadPlay() { //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 }
 
-function createPlay() {
+function createHall() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    createCameraSet();
+    createHallCameraSet();
 
     //This goes here because otherwise the arcade would be in front of the player
     arcadeMachine = game.add.sprite(2000, 710, 'arcadeMachine'); 
 
-    createPlayer();
+    createHallPlayer();
     createHallLevel();
-    createKeyControls();
+    createHallKeyControls();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
-function createKeyControls() {
+function createHallKeyControls() {
     cursors = game.input.keyboard.createCursorKeys();
 }
 
-function updatePlay() {
+function updateHall() {
     isGrounded = game.physics.arcade.collide(player, layer);
 
     //If close to arcade, reduce velocity and stop jumping
@@ -51,16 +51,17 @@ function updatePlay() {
         isGrounded = false;
     }
 
-    if (arcadeMachine.x - player.body.x < 175) {
+    if (arcadeMachine.x - player.body.x < 175 & !tweeningPlayer) { //Last part of Hall state
 
         letPlayerMove = false;
-        game.time.events.add(2000, tweenPlayer);
+        tweeningPlayer = true;
+        game.time.events.add(2000, tweenHallPlayer);
     }
 
-    playerMovement();
+    playerHallMovement();
 }
 
-function playerMovement() {
+function playerHallMovement() {
     if (letPlayerMove){
         if (cursors.left.isDown){
             player.body.velocity.x = -PLAYER_VELOCITY * playerVelocityReducer;
@@ -97,7 +98,7 @@ function playerMovement() {
     }
 }
 
-function createCameraSet(){
+function createHallCameraSet(){
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     game.camera.focusOnXY(0, 0);
@@ -115,7 +116,7 @@ function createCameraSet(){
 
 }
 
-function createPlayer() {
+function createHallPlayer() {
     let x = game.world.centerX;
     let y = 710;
 
@@ -152,10 +153,38 @@ function createHallLevel() {
     arcadeMachine.scale.setTo(0.25, 0.25);
 }
 
-function tweenPlayer(){
+function tweenHallPlayer(){
     
-    //game.add.tween(player).to( { x: arcadeMachine.x + 100 }, 500, "Back.easeInOut", true, 0, 0, false);
-    // game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
-    // game.add.tween(consoleSprite).to( { alpha: 1 }, 100, "Linear", true);
+    //ELEVATE PLAYER
+    let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
+    game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
+    game.add.tween(player).to( { angle: 1200 }, 1000, "Back.easeOut", true, 500, 0, false);
 
+    //WHEN FINISHED ELEVATING, REDUCE ITS SIZE AND TWEEN IT TO THE ARCADE MACHINE. THEN, DESTROY IT AND START 'play'.
+    completed.onComplete.add(function(){
+
+        game.add.tween(player.scale).to( { x: 0.25, y: 0.25 }, 200, "Back.easeInOut", true, 0, 0, false);
+        game.add.tween(player).to( { y: arcadeMachine.y }, 200, "Sine.easeIn", true, 0, 0, false);
+        game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
+
+        game.time.events.add(500, function(){
+
+            player.kill();
+            game.camera.unfollow();
+        })
+
+        game.time.events.add(2000, startPlayGame);
+    });
+
+}
+
+function startPlayGame(){ 
+
+    //Reset some variables
+    letPlayerMove = true; 
+    tweeningPlayer = false;
+    playerVelocityReducer = 1;
+    playerJumpVelocityReducer = 1;
+
+    game.state.start('play');
 }

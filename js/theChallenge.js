@@ -92,9 +92,11 @@ function wordCorrectAnswer() {
         bullet.y = 700;
     });
 
-    game.time.events.add(310, function(){alien.loadTexture('alien death')});
-    game.time.events.add(500, function(){setTimeout(clearWordScreen, TIMEOUTNEXTWORD)});
-
+    alien.loadTexture('alien death');
+    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
+    // game.time.events.add(310, function(){alien.loadTexture('alien death');});
+    // game.time.events.add(500, function(){setTimeout(clearWordScreen, TIMEOUTNEXTWORD)});
+    
 }
 
 // Restart error and correct sprites and alien position

@@ -10,13 +10,15 @@ let instructionsState = {
 };
 
 function loadAboutAssets() {
-    game.load.image('backButton', 'assets/imgs/buttons/playAgain.png');
+    game.load.image('backButton', 'assets/imgs/buttons/back.png');
+    game.load.image('nextButton', 'assets/imgs/buttons/next.png');
+    game.load.image('previousButton', 'assets/imgs/buttons/previous.png');
 }
 
 function showInstructions() {
     game.add.image(0, 0, 'bg');
 
-    let textTitle = 'TIME VAULT ARCADE: Instructions';
+    let textTitle = 'ESCAPE THE ARCADE: Instructions';
     let styleTitle = {
         font: 'Krona One',
         fontSize: '20pt',
@@ -62,17 +64,17 @@ function showInstructions() {
     btnPlay.anchor.setTo(0.5, 0.5);
 
     // BUTTONS FOR CHANGING THE TEXT
-    let nextInstructions = game.add.button(game.world.width - 50, game.world.height / 2, 'backButton',
+    let nextInstructions = game.add.button(game.world.width - 100, game.world.height / 2, 'nextButton',
     nextInstruction);
     nextInstructions.anchor.setTo(0.5, 0.5);
-    nextInstructions.scale.setTo(0.3);
+    nextInstructions.scale.setTo(0.6);
     nextInstructions.events.onInputOver.add(mouseOver, this);
     nextInstructions.events.onInputOut.add(mouseOut, this);
 
-    let previousInstructions = game.add.button(50, game.world.height / 2, 'backButton',
+    let previousInstructions = game.add.button(100, game.world.height / 2, 'previousButton',
     previousInstruction);
     previousInstructions.anchor.setTo(0.5, 0.5);
-    previousInstructions.scale.setTo(0.3);
+    previousInstructions.scale.setTo(0.6);
     previousInstructions.events.onInputOver.add(mouseOver, this);
     previousInstructions.events.onInputOut.add(mouseOut, this);
 
@@ -94,7 +96,6 @@ function nextInstruction() {
     instructionNumber += 1;
     if (instructionNumber > 3)
         instructionNumber = 0;
-    console.log(instructionSet[instructionNumber]);
     instrucText.setText(instructionSet[instructionNumber]);
 
 }
@@ -103,6 +104,5 @@ function previousInstruction() {
     instructionNumber -= 1;
     if (instructionNumber < 0)
         instructionNumber = 3;
-    console.log(instructionSet[instructionNumber]);
     instrucText.setText(instructionSet[instructionNumber]);
 }

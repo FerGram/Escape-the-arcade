@@ -1,6 +1,6 @@
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 1500; //DEFAULT 500, changed for debugging
-const PLAYER_JUMP_VELOCITY = 1000;
+const PLAYER_JUMP_VELOCITY = 800;
 
 let player;
 let cursors;
@@ -11,6 +11,8 @@ let isWalking = false;
 let isFlipped = false; //Is he looking left?
 let playerScale = 2; 
 let letPlayerMove = true;
+
+let tweeningPlayer = false; //Also used in the Hall state animation
 
 const WORLD_WIDTH = 100 * 16; //Get from Tiled
 const WORLD_HEIGHT = 24 * 16; //Get from Tiled
@@ -28,7 +30,7 @@ let level_1_created = false;
 let level_1_completed = true; //CHANGED TO TRUE JUST FOR DEBUGGING
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = false;
+let level_2_completed = true;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
@@ -48,6 +50,7 @@ function preloadPlay() {
 
     game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/Terrain.png');
+    game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 
     //------PONG--------------------------------------------
     game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
@@ -95,7 +98,6 @@ function createKeyControls() {
 
 function updatePlay() {
     isGrounded = game.physics.arcade.collide(player, layer);
-    
 
     //#region LEVEL 1
 
@@ -159,6 +161,14 @@ function updatePlay() {
         } 
 
     //#endregion
+
+    //END GAME
+    if (player.body.x > 9425 & !tweeningPlayer){
+
+        letPlayerMove = false;
+        tweeningPlayer = true;
+        game.time.events.add(2000, tweenPlayer); //Method of HallState
+    }
     
     playerMovement();
 }
@@ -219,7 +229,8 @@ function createCameraSet(){
 }
 
 function createPlayer() {
-    let x = game.world.centerX;
+
+    let x = 200;                            //Starting point of world 
     let y = game.world.height - 500;
 
     player = game.add.sprite(x, y, 'player');
@@ -230,7 +241,7 @@ function createPlayer() {
 
     player.animations.play('idle');
     player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(playerScale, playerScale);
+    player.scale.setTo(0.1, 0.1);
 
     game.physics.arcade.enable(player);
 
@@ -238,6 +249,9 @@ function createPlayer() {
     player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
+
+    //Little tween to the scale at start
+    game.add.tween(player.scale).to( { x: playerScale, y: playerScale }, 400, "Back.easeInOut", true, 0, 0, false);
 }
 
 function createLevel() {
@@ -245,9 +259,43 @@ function createLevel() {
     map = game.add.tilemap('map');
     map.addTilesetImage('Terrain', 'tiles');
 
-    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); //Update in BU2
+    //Sets collision to all tile layers except the ones below
+    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
+
+    arcadeMachine = game.add.sprite(9550, 715, 'arcadeMachine');
+    arcadeMachine.anchor.setTo(0.5, 0.5);
+    arcadeMachine.scale.setTo(0.25, 0.25);
+}
+
+function tweenPlayer(){
+    
+
+
+    //ELEVATE PLAYER
+    let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
+    game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
+    game.add.tween(player).to( { angle: 1200 }, 1000, "Back.easeOut", true, 500, 0, false);
+
+
+
+    //WHEN FINISHED ELEVATING, REDUCE ITS SIZE AND TWEEN IT TO THE ARCADE MACHINE. THEN, DESTROY IT AND START 'play'.
+    completed.onComplete.add(function(){
+
+        game.add.tween(player.scale).to( { x: 0.25, y: 0.25 }, 200, "Back.easeInOut", true, 0, 0, false);
+        game.add.tween(player).to( { y: arcadeMachine.y }, 200, "Sine.easeIn", true, 0, 0, false);
+        game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
+
+        game.time.events.add(500, function(){
+
+            player.kill();
+            game.camera.unfollow();
+        })
+
+        //game.time.events.add(2000, ); //TODO FINISH
+    });
+
 }

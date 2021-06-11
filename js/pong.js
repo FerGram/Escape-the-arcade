@@ -102,7 +102,7 @@ function pongPlayerMovement(){
     else pongPlayer2.body.velocity.y = -pongPlayer2Velocity;
 }
 
-function updateTimer(){ //This is a time event callback (not in update method)
+function updateTimer(){ //This is a time event callback
 
     let currentTime = new Date();
     let timeDifference = currentTime.getTime() - timeStartPoint.getTime();
@@ -113,7 +113,7 @@ function updateTimer(){ //This is a time event callback (not in update method)
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 50) stopGame();
+    if (minutes == 0 && seconds > 10) stopGame();
 }
 
 function createBlackBG(){
