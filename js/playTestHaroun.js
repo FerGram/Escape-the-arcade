@@ -139,7 +139,11 @@ function collisionOfEnemyWithBullets(e, b){
 
 function collisionOfBulletsWithAliens(b, a){
     b.kill();
-    a.kill();
+
+    a.p.hp--;
+    if (a.p.hp <= 0){
+        a.kill();
+    }
 }
 
 function playerMovement() {
@@ -210,7 +214,7 @@ function createGun(){
     gun.anchor.setTo(0.7, 0.5);
     gun.scale.setTo(-1 * gunScale, gunScale);
 
-    gunTip = game.add.sprite(0, 0, 'player');
+    gunTip = game.add.sprite(0, 0, 'gunTip');
     gunTip.anchor.setTo(0.5, 0.5);
     gun.addChild(gunTip);
     gunTip.position.x = -60;
