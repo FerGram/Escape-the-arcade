@@ -3,20 +3,27 @@
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 500;
 const PLAYER_JUMP_VELOCITY = 500;
-const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 10
+const DISAPPEARANCE_TIME = 10000; // FOR ONE WORD
+const THE_CHALLENGE_TIME_LIMIT = 30000;
 const TIMEOUTNEXTWORD = 2000;
-const maxCorrectWords = 1;
+const maxCorrectWords = 4;
+const JUMP_LIMIT = 4;
+const HUD_X = 10;
+const HUD_Y = 50;
 let ALIEN_DOWN_VELOCITY = 0.5;
 
 
 let player;
 let cursors;
 
+let playingPartC = false;
 let platforms;
 let movingPlatforms;;
 let stationaryPlatforms;
 let tetrisSoundCollision;
 let tetrisSoundMovement;
+let remainingJumps = JUMP_LIMIT;
+let firstTimeC = true;
 
 let ground;
 let isGrounded = false;
@@ -31,7 +38,7 @@ let HUDupdate;
 let keyboardSounds;
 let correctSound;
 let errorSound;
-let remainingTime = DISAPPEARANCE_TIME/1000;
+let remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;
 let alien;
 let timer;
 let error;  // incorrect answer sprite
@@ -44,6 +51,8 @@ let currentWordIndex = 0;   // The index of the word inside options
 let doneWords = [false, false, false, false, false, false, false, false]; // For when the player fails and we loop the array
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
+let playingTheChallenge = false;
+let theChallengeScore = 0;
 
 let firstCol = false;
 
@@ -100,22 +109,32 @@ function createPlay() {
 
     createPlayer();
     createAlien();
+
     createPlatforms();
+
     createKeyControls();
     createSounds();
     // Only shuffle the first time around
     if(correctAnswers == 0){
         shuffle(options);
         console.log(options);
+        setTimeout(challengeFailed, THE_CHALLENGE_TIME_LIMIT);
+        playingTheChallenge = true;
     }
 
     // Add HUD for remaining time
-    HUD = game.add.text(50, 0, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+    HUD = game.add.text(HUD_X, HUD_Y, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
     HUDupdate = setInterval(updateHUD, 1000);
 
     createTypeGame();
+
     game.world.setBounds(0, 0, 2000, GAME_HEIGHT);
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    //this.game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+    //this.game.renderer.renderSession.roundPixels = true;
+    //Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
+    game.imageSmoothingEnabled = false;
 
 }
 
@@ -126,12 +145,20 @@ function createKeyControls() {
 function updatePlay() {
 
     isGrounded = game.physics.arcade.collide(player, platforms) || game.physics.arcade.collide(player, movingPlatforms);
-    if(correctAnswers >= maxCorrectWords) { //correctAnswers >= maxCorrectWords
+    if(correctAnswers >= maxCorrectWords || !playingTheChallenge) { //correctAnswers >= maxCorrectWords
         playerMovement();
          // Part C
-         game.physics.arcade.overlap(movingPlatforms, stationaryPlatforms, collisionOfPlatforms, null, this)
+         game.physics.arcade.overlap(movingPlatforms, stationaryPlatforms, collisionOfPlatforms, null, this);
+         if (firstTimeC) {
+            HUD.destroy();
+            HUD = game.add.text(HUD_X, HUD_Y, 'Remaining jumps: ' + remainingJumps, {font:'20px Krona One', fill:'#FFFFFF'});
+            HUD.fixedToCamera = true;
+            firstTimeC = false;
+            playingPartC = true;
+         }
+         updateHUDC();
     }
-   else
+   else if (playingTheChallenge)
         alienMovement();
 }
 
@@ -149,7 +176,6 @@ function collisionOfPlatforms(movPlat, statPlat){
 
     movingPlatforms.removeChildAt(0);
     platforms.add(movPlat);
-    tetrisSoundCollision.play();
     setTimeout(disappearanceOfPlatforms, timeToFit + 500, movPlat, statPlat);
 }
 
@@ -185,10 +211,16 @@ function playerMovement() {
         }
         player.body.velocity.x = 0; //change velocity on x to 0.
     }
-    if (cursors.up.isDown && isGrounded && player.body.touching.down){
-        player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
-        isGrounded = false;
-    }
+    // ADDED A RESTRICTION TO THE JUMP FOR PART C
+    if (!playingPartC || playingPartC && remainingJumps > 0)
+        if (cursors.up.isDown && isGrounded && player.body.touching.down){
+            player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
+            isGrounded = false;
+            if (playingPartC) {
+                remainingJumps -= 1;
+                updateHUDC();
+            }
+        }
 }
 
 // CREATE PLAYER
@@ -251,14 +283,14 @@ function createPlatforms() {
             tetrisType[1] = 'tetris6';
         }
 
-        platform = game.add.sprite(ground.width + 50*i*6, GAME_HEIGHT - 128, tetrisType[0]); // Cuidado con la X
+        platform = game.add.sprite(ground.width + 50*i*10 - 300, GAME_HEIGHT - 128, tetrisType[0]); // Cuidado con la X
         //platform.scale.setTo(0.1, 0.1);
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
         platform.body.onCollide.add(movePlatform, this);
 
-        stationaryPlatform = game.add.sprite(platform.x+platform.width+5, GAME_HEIGHT-128, tetrisType[1]);
+        stationaryPlatform = game.add.sprite(platform.x+platform.width+ 100, GAME_HEIGHT-128, tetrisType[1]);
         stationaryPlatforms.add(stationaryPlatform);
         stationaryPlatform.body.immovable = true;
     }
@@ -279,9 +311,13 @@ function createSounds() {
     tetrisSoundMovement = game.add.sound('tetrisMovement');
 }
 
+
+
+
 // NUEVO
-// PARTE C
+// PARTE C  -------- también falta realizar el checkpoint!!
 function movePlatform(p) {
+    tetrisSoundCollision.play();
     p.body.velocity.x = 200;
     p.body.onCollide = null;
 }
@@ -290,6 +326,12 @@ function destroyPlatforms(mp, sp) {
     mp.destroy();
     sp.destroy();
 }
+
+function updateHUDC() {
+    HUD.setText("Remaining jumps: " + remainingJumps);
+}
+
+
 
 // PARTE B
 function createAlien() {
@@ -405,7 +447,7 @@ function createTypeGame() {
     correct.scale.setTo(0.1);
     correct.alpha = 0;
 
-    // Introduce the event for the kayboard
+    // Introduce the event for the keyboard
     game.input.keyboard.onDownCallback = getKeyboardInput; // Calling getKeyboardInput when a key is pressed
 
     // Show the current console to be guessed
@@ -426,7 +468,7 @@ function restartTypeGame() {
     // Always pass to the next word
     currentWordIndex += 1;
 
-    if (correctAnswers < maxCorrectWords) {
+    if (correctAnswers < maxCorrectWords & playingTheChallenge) {
 
 
         if (currentWordIndex > 7) 
@@ -448,14 +490,13 @@ function restartTypeGame() {
         createTypeGame();
 
         game.input.keyboard.enabled = true;
-        remainingTime = DISAPPEARANCE_TIME/1000;
 
         HUD.destroy();
-        HUD = game.add.text(50, 0, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
-        HUDupdate = setInterval(updateHUD, 1000);
+        HUD = game.add.text(HUD_X, HUD_Y, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+        HUDupdate = setInterval(updateHUD, 1000);   // Reduce remaining time and update 
     }
     else {
-        HUD.destroy();
+        //HUD.destroy();
         consoleSprite.destroy();
         timer.destroy();
         alien.destroy();
@@ -464,4 +505,19 @@ function restartTypeGame() {
         game.input.keyboard.enabled = true;
         game.input.keyboard.onDownCallback = null;
     }
+}
+
+// NEED TO RESTART POSITION
+function challengeFailed() {
+    playingTheChallenge = false;
+    restartTypeGame();
+    playingTheChallenge = true;
+    remainingTime = THE_CHALLENGE_TIME_LIMIT / 1000;
+    createAlien();
+    createTypeGame();
+    correctAnswers = 0;
+    shuffle(options);
+    console.log(options);
+    setTimeout(challengeFailed, THE_CHALLENGE_TIME_LIMIT);
+    playingTheChallenge = true;
 }
