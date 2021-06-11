@@ -1,5 +1,5 @@
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 1500; //DEFAULT 500, changed for debugging
+const PLAYER_VELOCITY = 800; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 800;
 
 let player;
@@ -9,7 +9,7 @@ let ground;
 let isGrounded = false;
 let isWalking = false;
 let isFlipped = false; //Is he looking left?
-let playerScale = 2; 
+let playerScale = 3.5; 
 let letPlayerMove = true;
 
 let tweeningPlayer = false; //Also used in the Hall state animation
@@ -59,7 +59,7 @@ function preloadPlay() {
     game.load.image('players','/assets/imgs/WhiteSquare.jpg');
 
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
-    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
+    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('alien', '/assets/imgs/alien.png');
@@ -85,8 +85,8 @@ function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     createCameraSet();
-    createPlayer();
     createLevel();
+    createPlayer();
     createKeyControls();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -238,12 +238,12 @@ function createPlayer() {
     player = game.add.sprite(x, y, 'player');
 
     //Create animations
-    player.animations.add('idle', [0, 1, 2, 3, 4, 5, 6, 7 ,8 ,9, 10], 12, true);
-    player.animations.add('walk', [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 12, true);
+    player.animations.add('idle', [0, 1, 2, 3, 4], 8, true);
+    player.animations.add('walk', [5, 6, 7, 8], 10, true);
 
     player.animations.play('idle');
     player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(0.1, 0.1);
+    player.scale.setTo(playerScale, playerScale);
 
     game.physics.arcade.enable(player);
 
@@ -262,19 +262,12 @@ function createLevel() {
     map.addTilesetImage('TF', 'tiles');
 
     //Sets collision to all tile layers except the ones below
-    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); 
-
-    layer = map.createLayer('layer3');
-    layer.setScale(2, 2);
-    layer.resizeWorld();
-
-    layer = map.createLayer('layer2');
-    layer.setScale(2, 2);
-    layer.resizeWorld();
+    map.setCollisionByExclusion([-1, 196, 197, 199, 200, 201, 421, 422, 453, 454, 544]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
+    //layer.debug = true;
 
     arcadeMachine = game.add.sprite(10900, 715, 'arcadeMachine');
     arcadeMachine.anchor.setTo(0.5, 0.5);
