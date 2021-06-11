@@ -43,7 +43,9 @@ let rocks;
 let clouds;
 let trees;
 
-let enemy;
+//let enemy;
+
+let aliens;
 
 let playState = {
     preload: preloadPlay,
@@ -57,12 +59,15 @@ function preloadPlay() {
     game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
     //Tilemap and level
-    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/imgs/Terrain.png');
+    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', './assets/imgs/TF.png');
 
     //Ak-47 and bullet
     game.load.spritesheet('gun', './assets/imgs/AK47.png', 84, 30, 20);
-    game.load.image('bullet', './assets/imgs/bullet.png');
+    game.load.image('gunTip', './assets/imgs/gunTip.png');
+
+    game.load.image('playerBullet', './assets/imgs/bullet_H1.png');
+    game.load.image('enemyBullet', './assets/imgs/bullet_H2.png');
 
     //paralax
     game.load.image('sky', './assets/imgs/layer06_sky.png');
@@ -93,7 +98,8 @@ function createPlay() {
     createPlayer();
     createKeyControls();
 
-    createEnemy();
+
+    createAliens();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
@@ -109,7 +115,8 @@ function createKeyControls() {
 
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
-    game.physics.arcade.overlap(bullets, enemy.enemy);
+    //game.physics.arcade.overlap(enemy.obj, bullets, collisionOfEnemyWithBullets, null, this);
+    game.physics.arcade.overlap(bullets, aliens, collisionOfBulletsWithAliens, null, this);
     playerMovement();
     scrollBackground();
     gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
@@ -118,6 +125,21 @@ function updatePlay() {
     if (game.input.activePointer.leftButton.isDown){
         shootAK47();
     }
+
+}
+
+function collisionOfEnemyWithBullets(e, b){
+    console.log("hit enemy");
+    console.log(e.p.hp);
+    e.p.hp--;
+    if (e.p.hp <= 0){
+        e.visible = false; //Edit disable instead.
+    }
+}
+
+function collisionOfBulletsWithAliens(b, a){
+    b.kill();
+    a.kill();
 }
 
 function playerMovement() {
@@ -134,7 +156,7 @@ function playerMovement() {
     if (cursors.left.isDown)
     {
         player.body.velocity.x = -PLAYER_VELOCITY;
-        //scrollBackground(); 
+        //scrollBackground();
         if (!isWalking || !isFlipped){
             isWalking = true;
             isFlipped = true;
@@ -188,7 +210,7 @@ function createGun(){
     gun.anchor.setTo(0.7, 0.5);
     gun.scale.setTo(-1 * gunScale, gunScale);
 
-    gunTip = game.add.sprite(0, 0, 'bullet');
+    gunTip = game.add.sprite(0, 0, 'player');
     gunTip.anchor.setTo(0.5, 0.5);
     gun.addChild(gunTip);
     gunTip.position.x = -60;
@@ -200,10 +222,38 @@ function createBullets(){ //TODO Bullets break with world bounds, should break w
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-    bullets.createMultiple(100, 'bullet');
+    bullets.createMultiple(100, 'playerBullet');
     bullets.setAll('checkWorldBounds', true);
     bullets.setAll('outOfBoundsKill', true); //TODO fix, only kills bullets when out of world bounds, not cameras, player runs of of bullets.
     bullets.setAll('body.allowGravity', false);
+}
+
+function createAliens(){
+
+    aliens = game.add.group();
+    //aliens.fixedToCamera = true;
+    aliens.enableBody = true;
+    aliens.physicsBodyType = Phaser.Physics.ARCADE;
+
+    for (let y = 0; y < 5; y++){
+        for (let x = 0; x < 20; x++){
+            let alien = createEnemy(aliens.create(x * 64, y * 32, 'player'));
+
+            alien.anchor.setTo(0.5, 0.5);
+            alien.body.moves = false;
+        }
+    }
+
+    aliens.x = 600;
+    aliens.y = 300;
+
+    var alienTween = game.add.tween(aliens).to( { x: 200 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+
+    alienTween.onLoop.add(descendAliens, this);
+}
+
+function descendAliens(){
+    aliens.position.y += 50;
 }
 
 function gunRotation(){
@@ -219,7 +269,7 @@ function gunRotation(){
 function createLevel(){
     //Create
     map = game.add.tilemap('map');
-    map.addTilesetImage('Terrain', 'tiles');
+    map.addTilesetImage('TF', 'tiles');
 
     map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); //Update in BU2
 
@@ -262,6 +312,7 @@ function scrollBackground(){
 function shootAK47(){
 
     if (game.time.now > fireCooldown && bullets.countDead() > 0){
+
         gun.animations.play('shoot');
 
         fireCooldown = game.time.now + fireSpeed;
@@ -275,13 +326,14 @@ function shootAK47(){
     }
 }
 
-function createEnemy(){
-    enemy = new Enemy1(game.add.sprite(320, 320, 'player'));
+function createEnemy(spr){
+    let enemy = new Enemy1(spr);
     game.physics.arcade.enable(enemy.obj);
 
     enemy.obj.body.linearDamping = 1;
-
     enemy.obj.body.gravity = 0;
+
+    return enemy.obj;
 }
 
 class Enemy1{
@@ -289,5 +341,6 @@ class Enemy1{
         this.hp = 3;
 
         this.obj = enemy;
+        this.obj.p = this;
     }
 }
