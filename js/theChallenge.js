@@ -275,7 +275,7 @@ console.log(currentWordIndex);
     typing = game.add.text(game.camera.position.x + game.camera.width / 1.5, 
                             game.camera.position.y + game.camera.height / 2, 
                             "_ ".repeat(option.length) , 
-                            {fontSize: '20px', fill: '#FA2'});
+                            {fontSize: '20px', fill: '#FA2', font: 'Verdana'});
 }
 
 // Chooses new word and resets all timers and sprites
