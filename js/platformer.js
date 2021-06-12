@@ -13,7 +13,6 @@ function updatePlatformer() {
        HUD = game.add.text(HUD_X, HUD_Y, 'Remaining jumps: ' + remainingJumps, {font:'20px Krona One', fill:'#FFFFFF'});
        HUD.fixedToCamera = true;
        firstTimeC = false;
-       playingPartC = true;
     }
     updateHUDplatformer();
 }
@@ -60,14 +59,15 @@ function createPlatforms() {
             tetrisType[1] = 'tetris6';
         }
 
-        platform = game.add.sprite(PLATFORMS_STARTING_X + i * 800, GAME_HEIGHT/2 + 200, tetrisType[0]); // Cuidado con la X
+        let yposition =Math.random() * (GAME_HEIGHT/2 + 200 - (GAME_HEIGHT/2 + 75)) + GAME_HEIGHT/2 + 75;
+        platform = game.add.sprite(PLATFORMS_STARTING_X + i * 800, yposition, tetrisType[0]); // Cuidado con la X
         //platform.scale.setTo(0.1, 0.1);
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
         platform.body.onCollide.add(movePlatform, this);
 
-        stationaryPlatform = game.add.sprite(platform.x + platform.width + 300, GAME_HEIGHT/2 + 200, tetrisType[1]);
+        stationaryPlatform = game.add.sprite(platform.x + platform.width + 300, platform.y, tetrisType[1]);
         stationaryPlatforms.add(stationaryPlatform);
         stationaryPlatform.body.immovable = true;
     }
@@ -115,4 +115,13 @@ function destroyPlatforms(mp, sp) {
 
 function partCScore() {
     return remainingJumps;
+}
+
+function resetPlatforms() {
+    movingPlatforms.destroy();
+    HUD.destroy();
+    stationaryPlatforms.destroy();
+    remainingJumps = JUMP_LIMIT;
+    createPlatforms();
+    firstTimeC = true;
 }

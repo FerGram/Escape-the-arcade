@@ -1,9 +1,11 @@
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 800; //DEFAULT 500, changed for debugging
-const PLAYER_JUMP_VELOCITY = 800;
+const PLAYER_VELOCITY = 600; //DEFAULT 500, changed for debugging
+const PLAYER_JUMP_VELOCITY = 650;
 const JUMP_LIMIT = 4;
 
 const CHECKPOINT_A_XPOS = 100;
+const CHECKPOINT_B_XPOS = 100;
+const CHECKPOINT_C_XPOS = 8000;
 
 let remainingJumps = JUMP_LIMIT;
 
@@ -35,7 +37,7 @@ let level_1_created = false;
 let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = true;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
@@ -54,7 +56,6 @@ let movingPlatforms;
 let stationaryPlatforms;
 
 let firstTimeC = true;
-let playingPartC = false;
 
 // GAME
 let playState = {
@@ -128,7 +129,6 @@ function createPlay() {
     createLevel();
     createPlayer();
     createKeyControls();
-    createPlatforms();
     createSoundsPlatformer();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -211,6 +211,7 @@ function updatePlay() {
             letPlayerMove = true;
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
             partB_score = partBScore();
+            createPlatforms();
         }
 
         //Update level_2
@@ -223,11 +224,18 @@ function updatePlay() {
 
     //#region LEVEL 3
                             // Start at 8300
-    if(!level_3_completed && level_2_completed && player.body.x > 8300 ) {
+    if(!level_3_completed && level_2_completed && player.body.x > CHECKPOINT_C_XPOS + 300 ) {
         updatePlatformer();
         level_3 = true;
+        if (player.body.y > GAME_HEIGHT/2 + 250) {
+            player.y = game.world.height - 500;
+            player.x = CHECKPOINT_C_XPOS;
+            resetPlatforms();
+            level_3 = false;
+        }
     }
-    if (player.body.x > 10800) {
+    
+    if (player.body.x > 10700) {
         level_3_completed = true;
         partC_score = partCScore();
         level_3 = false;    // Stop decresing number of jumps
@@ -308,7 +316,7 @@ function createCameraSet(){
 
 function createPlayer() {
 
-    let x = 8000;                            //Starting point of world 
+    let x = 200;                            //Starting point of world 
     let y = game.world.height - 500;
 
     player = game.add.sprite(x, y, 'player');
