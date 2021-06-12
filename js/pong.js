@@ -12,6 +12,7 @@ let pongPlayer2Velocity = 500;
 let player1Score = 0;
 let player2Score = 0;
 let player1ScoreLabel, player2ScoreLabel, endText;
+let middle, middle1, middle2, middle3, middle4;
 
 let canStartGame = false;
 let stageMiddle;
@@ -34,19 +35,21 @@ function createPONG() {
     pongGroup = game.add.group();
     pongGroup.enableBody = true;
 
-    game.time.events.add(1000, createBlackBG);
-    game.time.events.add(1500, createPongPlayers);
-    game.time.events.add(3000, createStage);
-    game.time.events.add(4500, createScore);
-    game.time.events.add(6000, createBall);
-    game.time.events.add(6000, createTimer);
-    game.time.events.add(6000, createEnergy);
-
     hitTimer = game.time.create(false);
+
+    hitTimer.add(1000, createBlackBG);
+    hitTimer.add(1500, createPongPlayers);
+    hitTimer.add(3000, createStage);
+    hitTimer.add(4500, createScore);
+    hitTimer.add(6000, createBall);
+    hitTimer.add(6000, createTimer);
+    hitTimer.add(6000, createEnergy);
+
     hitTimer.start();
 }
 
 function updatePONG() {
+
     if (!canStartGame) return;
 
     ballMovement();
@@ -203,29 +206,27 @@ function createScore(){
 }
 
 function createStage(){
-    let middle = game.add.sprite(stageMiddle, 40, 'middle');
+    middle = game.add.sprite(stageMiddle, 40, 'middle');
     middle.anchor.setTo(0.5, 0.5);
     middle.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(stageMiddle, game.height / 2, 'middle');
-    middle.anchor.setTo(0.5, 0.5);
-    middle.scale.setTo(0.015, 0.1);
+    middle1 = game.add.sprite(stageMiddle, game.height / 2, 'middle');
+    middle1.anchor.setTo(0.5, 0.5);
+    middle1.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(stageMiddle, game.height / 4, 'middle');
-    middle.anchor.setTo(0.5, 0.5);
-    middle.scale.setTo(0.015, 0.1);
+    middle2 = game.add.sprite(stageMiddle, game.height / 4, 'middle');
+    middle2.anchor.setTo(0.5, 0.5);
+    middle2.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(stageMiddle, game.height * 3 / 4, 'middle');
-    middle.anchor.setTo(0.5, 0.5);
-    middle.scale.setTo(0.015, 0.1);
+    middle3 = game.add.sprite(stageMiddle, game.height * 3 / 4, 'middle');
+    middle3.anchor.setTo(0.5, 0.5);
+    middle3.scale.setTo(0.015, 0.1);
 
-    middle = game.add.sprite(stageMiddle, game.height - 40, 'middle');
-    middle.anchor.setTo(0.5, 0.5);
-    middle.scale.setTo(0.015, 0.1);
+    middle4 = game.add.sprite(stageMiddle, game.height - 40, 'middle');
+    middle4.anchor.setTo(0.5, 0.5);
+    middle4.scale.setTo(0.015, 0.1);
 
     game.world.bringToTop(player);
-    //game.world.bringToTop(platforms);
-
 }
 
 function resetBall(ball) {
@@ -286,7 +287,7 @@ function updateEnergy(){
 
     energySprite.loadTexture('battery' + energy);
 
-    if (energy <= 5){
+    if (energy <= 0){
 
         resetGame();
     }
@@ -316,6 +317,12 @@ function resetGame(){
     level_1_completed = false;
     level_1_created = false;
     level_1 = false;
+
+    middle.destroy();
+    middle1.destroy();
+    middle2.destroy();
+    middle3.destroy();
+    middle4.destroy();
 
     game.stage.backgroundColor = '#18C4BC';
 

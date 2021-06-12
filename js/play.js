@@ -138,10 +138,11 @@ function updatePlay() {
 
             if(!level_1_created) {
                 letPlayerMove = false;
-                game.camera.unfollow();
-                game.time.events.add(6000, function()
-                                        {letPlayerMove = true;});
                 createPONG();
+
+                game.camera.unfollow();
+                hitTimer.add(6000, function()
+                                        {letPlayerMove = true;});
                 level_1_created = true;
             }
 
