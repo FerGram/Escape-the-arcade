@@ -154,8 +154,9 @@ function updatePlay() {
     //#region LEVEL 2
 
         //Set level_2 in progress           DEFAULT VALUES: 5600 & 6200
-        if (!level_2 & !level_2_completed & player.body.x > 5950 & player.body.x < 6900) {
+        if (!level_2 & !level_2_completed & player.body.x > 5600 & player.body.x < 6200) {
 
+            console.log('LEVEL 2');
             level_2 = true; 
 
             letPlayerMove = false;
@@ -285,6 +286,7 @@ function createPlayer() {
     player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
+    player.smoothed = false;
 
     //Little tween to the scale at start
     game.add.tween(player.scale).to( { x: playerScale, y: playerScale }, 400, "Back.easeInOut", true, 0, 0, false);
