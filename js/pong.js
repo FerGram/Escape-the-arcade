@@ -36,6 +36,7 @@ function createPONG() {
     pongGroup.enableBody = true;
 
     hitTimer = game.time.create(false);
+    
 
     hitTimer.add(1000, createBlackBG);
     hitTimer.add(1500, createPongPlayers);
@@ -121,8 +122,7 @@ function pongPlayerMovement(){
 
 function updateTimer(){ //This is a time event callback
 
-    let currentTime = new Date();
-    let timeDifference = currentTime.getTime() - timeStartPoint.getTime();
+    let timeDifference = game.time.now - timeStartPoint;
 
     timeElapsed = Math.abs(timeDifference / 1000);
 
@@ -130,7 +130,7 @@ function updateTimer(){ //This is a time event callback
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 50) stopGame();
+    if (minutes == 0 && seconds > 10) stopGame();
 }
 
 function createBlackBG(){
@@ -139,11 +139,19 @@ function createBlackBG(){
 
 function createTimer(){
 
-    gameTimer = game.time.events.loop(100, updateTimer);
-    gameBallSpawner = game.time.events.loop(SPAWN_BALL_TIME, createBall);
-    fireBallSpawner = game.time.events.loop(SPAWN_BALL_TIME * 2, makeFireBall); //Make fire ball every 3 balls created
+    gameTimer = game.time.create(false);
+    gameBallSpawner = game.time.create(false);
+    fireBallSpawner = game.time.create(false);
 
-    timeStartPoint = new Date();
+    gameTimer.loop(100, updateTimer);
+    gameBallSpawner.loop(SPAWN_BALL_TIME, createBall);
+    fireBallSpawner.loop(SPAWN_BALL_TIME * 2, makeFireBall); //Make fire ball every 3 balls created
+
+    gameTimer.start();
+    gameBallSpawner.start();
+    gameBallSpawner.start();
+
+    timeStartPoint = game.time.now;
     canStartGame = true;
 
     game.world.bringToTop(layer);
@@ -240,8 +248,8 @@ function resetBall(ball) {
 function stopGame(){
 
     canStartGame = false;
-    gameTimer.timer.destroy();
-    gameBallSpawner.timer.destroy();
+    gameTimer.destroy();
+    gameBallSpawner.destroy();
 
     balls.forEach(ball => {
         ball.destroy();
@@ -287,7 +295,7 @@ function updateEnergy(){
 
     energySprite.loadTexture('battery' + energy);
 
-    if (energy <= 0){
+    if (energy <= 5){
 
         resetGame();
     }
@@ -298,8 +306,8 @@ function resetGame(){
     player.body.x = CHECKPOINT_A_XPOS;
 
     canStartGame = false;
-    gameTimer.timer.destroy();
-    gameBallSpawner.timer.destroy();
+    gameTimer.destroy();
+    gameBallSpawner.destroy();
 
     balls.forEach(ball => {
         ball.destroy();
