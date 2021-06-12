@@ -4,7 +4,7 @@ let balls; //This is a group
 let collidedWithXBorder = false;
 let collidedWithYBorder = false;
 let timeElapsed = 0;
-let gameTimer, gameBallSpawner, timeStartPoint;
+let gameTimer, gameBallSpawner, timeStartPoint, hitTimer;
 
 let pongPlayer1Velocity = 500;
 let pongPlayer2Velocity = 500;
@@ -17,10 +17,14 @@ let canStartGame = false;
 let stageMiddle;
 let fireBall;
 
+let energy = 6;
+let energySprite;
+
 const SPAWN_BALL_TIME = 7500; //In miliseconds
 const BALL_VELOCITY = 500;
 const FIREBALL_VELOCITY = 1.5;
 const X_OFFSET = 100;
+const INVULNERAVILITY_SEC = 1500; //In milliseconds
 
 //-----------------------------------------------------
 
@@ -36,6 +40,10 @@ function createPONG() {
     game.time.events.add(4500, createScore);
     game.time.events.add(6000, createBall);
     game.time.events.add(6000, createTimer);
+    game.time.events.add(6000, createEnergy);
+
+    hitTimer = game.time.create(false);
+    hitTimer.start();
 }
 
 function updatePONG() {
@@ -50,9 +58,16 @@ function updatePONG() {
     game.physics.arcade.collide(player, pongPlayer1);
     game.physics.arcade.collide(player, pongPlayer2);
 
-    if (game.physics.arcade.overlap(player, balls)){
+    if (game.physics.arcade.overlap(player, balls) & hitTimer.ms > INVULNERAVILITY_SEC){ //Player hit by ball
+
         console.log("OUCH!");
         game.camera.shake(0.03, 250);
+
+        hitTimer.stop(); //Reset invulnerability timer
+        hitTimer.start();
+
+        energy--;
+        updateEnergy();
     }
 
 }
@@ -129,8 +144,8 @@ function createTimer(){
     timeStartPoint = new Date();
     canStartGame = true;
 
-    game.world.bringToTop(player);
     game.world.bringToTop(layer);
+    game.world.bringToTop(player);
 }
 
 function createPongPlayers() {
@@ -181,9 +196,9 @@ function createBall(){
 }
 
 function createScore(){
-    player1ScoreLabel = game.add.text(stageMiddle - 250, 100, '0', {font:'50px Arial', fill: "#fff"});
+    player1ScoreLabel = game.add.text(stageMiddle - 250, 200, '0', {font:'50px Arial', fill: "#fff"});
     player1ScoreLabel.anchor.setTo(0.5, 0.5);
-    player2ScoreLabel = game.add.text(stageMiddle + 250, 100, '0', {font:'50px Arial', fill: "#fff"});
+    player2ScoreLabel = game.add.text(stageMiddle + 250, 200, '0', {font:'50px Arial', fill: "#fff"});
     player2ScoreLabel.anchor.setTo(0.5, 0.5);
 }
 
@@ -260,7 +275,17 @@ function moveFireBall(){
     fireBall.body.velocity.y = (player.body.y - fireBall.body.y) * FIREBALL_VELOCITY;
 }
 
+function createEnergy(){
 
+    energySprite = game.add.sprite(stageMiddle - 500, game.camera.height - 150, 'battery6');
+    energySprite.anchor.setTo(0.5, 0,5);
+    energySprite.scale.setTo(0.5, 0.5);
+}
+
+function updateEnergy(){
+
+    energySprite.loadTexture('battery' + energy);
+}
 
 
 

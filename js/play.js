@@ -27,7 +27,7 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; //CHANGED TO TRUE JUST FOR DEBUGGING
+let level_1_completed = false; //CHANGED TO TRUE JUST FOR DEBUGGING
 let level_2 = false;
 let level_2_created = false;
 let level_2_completed = true;
@@ -57,6 +57,14 @@ function preloadPlay() {
     game.load.image('fireball','/assets/imgs/RedSquare.jpg');
     game.load.image('middle','/assets/imgs/WhiteSquare.jpg');
     game.load.image('players','/assets/imgs/WhiteSquare.jpg');
+
+    game.load.image('battery0','/assets/imgs/Battery0.png');
+    game.load.image('battery1','/assets/imgs/Battery1.png');
+    game.load.image('battery2','/assets/imgs/Battery2.png');
+    game.load.image('battery3','/assets/imgs/Battery3.png');
+    game.load.image('battery4','/assets/imgs/Battery4.png');
+    game.load.image('battery5','/assets/imgs/Battery5.png');
+    game.load.image('battery6','/assets/imgs/Battery6.png');
 
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
@@ -97,9 +105,8 @@ function createKeyControls() {
 }
 
 function updatePlay() {
+    
     isGrounded = game.physics.arcade.collide(player, layer);
-
-    console.log(player.x);
 
     //#region LEVEL 1
 
@@ -146,6 +153,16 @@ function updatePlay() {
                 level_2_created = true;
                 createTheChallenge();
             });
+
+            stageMiddle = game.camera.position.x + game.camera.width/2;
+
+            let instruction = game.add.text(stageMiddle - 350, 3*GAME_HEIGHT/4, 
+                'TYPE THE CONSOLES', {font:'50px Verdana', fill: "#FFFFFF"});
+
+            instruction.alpha = 0;
+            game.add.tween(instruction).to( { alpha: 1 }, 400, "Linear", true, 0, 0, false);
+
+            game.time.events.add(4000, function(){instruction.destroy();});
         }
 
         //Set level_2 completed
@@ -262,7 +279,7 @@ function createLevel() {
     map.addTilesetImage('TF', 'tiles');
 
     //Sets collision to all tile layers except the ones below
-    map.setCollisionByExclusion([-1, 196, 197, 199, 200, 201, 421, 422, 453, 454, 544]); 
+    map.setCollisionByExclusion([-1, 0, 1, 2, 3, 196, 197, 199, 200, 201, 208, 421, 422, 453, 454, 544]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
