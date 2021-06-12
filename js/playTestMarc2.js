@@ -262,14 +262,14 @@ function createPlatforms() {
     ground.body.immovable = true;
 
 
-    //Instance of the platform to be
+    // Instance of the platform to be created
     let platform;
     let stationaryPlatform;
 
     for (let i = 1; i <= 3; i++) {
         let tetrisType = [];
         // Choose a random type of piece for the tetris piece
-        let random = Math.floor(Math.random() * 4)
+        let random = Math.floor(Math.random() * 3)
         if (random == 0) {
             tetrisType[0] = 'tetris1';
             tetrisType[1] = 'tetris2';

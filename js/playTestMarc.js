@@ -318,7 +318,7 @@ function updateHUD() {
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
-    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
+    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there are no errors
 
         keyboardSounds.play(String(Math.floor(Math.random() * 3 + 1))); // play sound
 
