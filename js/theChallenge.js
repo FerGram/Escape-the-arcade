@@ -1,23 +1,34 @@
 // Creating part's B game mechanic
 
-const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
+const DISAPPEARANCE_TIME = 10000; 
+const THE_CHALLENGE_TIME_LIMIT = 30000;
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 4;
 const BULLET_VELOCITY = -800;
+const HUD_X = 30;
+const HUD_Y = 100;
 let ALIEN_DOWN_VELOCITY = 0.75;
 
+let HUD;
+let HUDupdate;
+
 let alien;
-let timer;
+let timer;  // Timer for the remaining time of each word
+let remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;  // Timer for the remaining time of the whole challenge
 let error;  // incorrect answer sprite
 let correct;    // correct answer sprite
 let consoleSprite;
 var options = ["nintendo 64","playstation one","dreamcast","xbox","nes","gameboy","playstation two","snes"];
+options.length = 8;
 let option = [];    // The string of the player's input
 let currentLetterIndex = 0; // The index of the letter now waiting
 let currentWordIndex = 0;   // The index of the word inside options
-let doneWords = [false, false, false, false, false, false, false, false]; // For when the player fails and we loop the array
+let doneWords = [false, false, false, false, false, false, false, false]; // For when the player fails and we loop the array, this is in the case we could guess more words
 let correctAnswers = 0; // Number of correct answers
 let typing; // Text that will display the game
+let playingTheChallenge = false;
+let theChallengeScore = 0;
+
 
 let bullets; //Phaser group containing bullet pool
 let bulletCounter = 0;
@@ -28,22 +39,72 @@ function createTheChallenge() {
 
     createAlien();
     createBullets();
+    createSounds();
 
-    // Only shuffle the first time around
-    if(correctAnswers == 0){
+   // Only shuffle the first time around
+   if(correctAnswers == 0){
         shuffle(options);
         console.log(options);
+        //setTimeout(challengeFailed, THE_CHALLENGE_TIME_LIMIT);
+        playingTheChallenge = true;
     }
 
+     // Add HUD for remaining time
+     HUD = game.add.text(game.camera.position.x + HUD_X, 
+                            game.camera.position.y + HUD_Y, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+     HUDupdate = setInterval(updateHUD, 1000);
+ 
     createTypeGame();
-
-
 }
 
+
+// ------------ U P D A T E -----------------
 function updateTheChallenge() {
 
-    if(correctAnswers < maxCorrectWords) alienMovement(); 
+    if(correctAnswers < maxCorrectWords && playingTheChallenge) 
+        alienMovement(); 
 
+    checkBullets();
+
+    if (remainingTime == 0)
+            challengeFailed();
+}
+
+//  TIMER ON SCREEN UPDATE
+function updateHUD() {
+    remainingTime -= 1;
+    HUD.setText('Remaining time: ' + remainingTime);
+}
+
+function createAlien() {
+    alien = game.add.sprite(player.x + 660, 0, 'alien');
+    alien.anchor.setTo(0.5, 0.5);
+    alien.scale.setTo(0.1);
+
+    game.physics.arcade.enable(alien);
+    alien.enableBody = true;
+}
+
+function alienMovement() {
+    alien.y += ALIEN_DOWN_VELOCITY;
+}
+
+// Sounds for the keyboard, correct, error and gun
+function createSounds() {
+    keyboardSounds = game.add.sound('keyboardSound');
+    keyboardSounds.allowMultiple = true;
+    keyboardSounds.addMarker('1', 0, 0.2);
+    keyboardSounds.addMarker('2', 0.5, 0.2);
+    keyboardSounds.addMarker('3', 1, 0.2);
+    keyboardSounds.addMarker('4', 1.5, 0.2);
+
+    correctSound = game.add.sound('correctSound');
+    errorSound = game.add.sound('incorrectSound');
+    tetrisSoundCollision = game.add.sound('tetrisCollision');
+    tetrisSoundMovement = game.add.sound('tetrisMovement');
+}
+
+function checkBullets() {
     if (game.physics.arcade.overlap(alien, bullets)){ //Has a bullet collided with the alien?
 
         bullets.children.forEach(bullet => {
@@ -60,21 +121,40 @@ function updateTheChallenge() {
     }
 }
 
-function createAlien() {
-    alien = game.add.sprite(player.x + 660, 0, 'alien');
-    alien.anchor.setTo(0.5, 0.5);
-    alien.scale.setTo(0.1);
+function createBullets(){
 
-    game.physics.arcade.enable(alien);
-    alien.enableBody = true;
+    bullets = game.add.group();
+
+    for (let i = 0; i < 15; i++){ //Populate the group with 15 bullets (to avoid killing and spawning repeatedly)
+
+        let bullet = game.add.sprite(alien.x, 700, 'bullet');
+
+        bullet.anchor.setTo(0.5, 0.5);
+        bullet.scale.setTo(0.015, 0.03);
+        bullet.alpha = 0;
+
+        game.physics.arcade.enable(bullet);
+        bullet.enableBody = true;
+
+        bullets.add(bullet);
+    }
 }
 
-function alienMovement() {
-    alien.y += ALIEN_DOWN_VELOCITY;
+function shootAlien(){
+
+    bulletCounter = (bulletCounter + 1) % 15; //Cycle counter
+
+    bullets.children[bulletCounter].alpha = 1;
+    bullets.children[bulletCounter].body.velocity.y = BULLET_VELOCITY;
 }
+
+
+//---------- THE CHALLENGE GAME FLOW ---------------
 
 // When the word is not completed
 function wordTimeOut() {
+    errorSound.play();
+    clearInterval(HUDupdate);
     game.input.keyboard.enabled = false;
     error.alpha = 1;
     game.add.tween(error).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
@@ -82,8 +162,11 @@ function wordTimeOut() {
     ALIEN_DOWN_VELOCITY = 0;
     setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
 }
+
 // When the word is completed
 function wordCorrectAnswer() {
+    correctSound.play();
+    clearInterval(HUDupdate);
     correct.alpha = 1;
     game.add.tween(correct).to( { alpha: 0 }, 30, "Linear", true, 15, 4, true);
     timer.pause();
@@ -113,7 +196,9 @@ function clearWordScreen() {
 // game flow of keyboard inputs
 function getKeyboardInput(e) {
 
-    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there is no errors
+    if(e.key.toLowerCase() === option[currentLetterIndex]) {    // Make the input lower case, so there are no errors
+
+        keyboardSounds.play(String(Math.floor(Math.random() * 4 + 1)));
         let newText = typing.text;
         newText = newText.replace("_", e.key);  // Replace the first character with the second argument (once)
         typing.setText(newText.toUpperCase());     // Show the word in upper case  
@@ -155,7 +240,7 @@ function shuffle(array) {
 // Creates timers and words
 function createTypeGame() {
 
-    //  Create our Timer
+    //  Create our Timer for each word
     timer = game.time.create(false);
 
     //  Set a TimerEvent to occur after X seconds
@@ -183,7 +268,7 @@ function createTypeGame() {
                                     options[currentWordIndex]);
     consoleSprite.alpha = 0;
     game.add.tween(consoleSprite).to( { alpha: 1 }, 100, "Linear", true);
-
+console.log(currentWordIndex);
     // Prepare the current word
     option = options[currentWordIndex];
 
@@ -196,21 +281,17 @@ function createTypeGame() {
 // Chooses new word and resets all timers and sprites
 function restartTypeGame() {
 
-    // Always pass to the next word
-    currentWordIndex += 1;
+    if (correctAnswers < maxCorrectWords & playingTheChallenge) {
 
-    if (correctAnswers < maxCorrectWords) {
-
-        
-        if (currentWordIndex > 7) 
-                currentWordIndex = 0;
+        if (currentWordIndex > options.length-1) 
+        currentWordIndex = 0;
         // Only show the words that were not completed
         while(doneWords[currentWordIndex]){
-            if (currentWordIndex > 7) 
+            if (currentWordIndex > options.length-1) 
                 currentWordIndex = 0;
             else  
                 currentWordIndex += 1;
-        }
+         }
         consoleSprite.destroy();
         timer.destroy();
         alien.destroy();
@@ -221,44 +302,40 @@ function restartTypeGame() {
         createTypeGame();
    
         game.input.keyboard.enabled = true;
+
+        HUD.destroy();
+        HUD = game.add.text(game.camera.position.x + HUD_X, 
+                            game.camera.position.y + HUD_Y, 'Remaining time: ' + remainingTime, {font:'20px Krona One', fill:'#FFFFFF'});
+        HUDupdate = setInterval(updateHUD, 1000);   // Reduce remaining time and update 
     }
     else {
-
         consoleSprite.destroy();
         timer.destroy();
         alien.destroy();
         typing.destroy();
-        //game.state.start('hof');
+
+        if (playingTheChallenge) {
         game.input.keyboard.enabled = true;
         game.input.keyboard.onDownCallback = null;
-
         level_2_completed = true;
+        playingTheChallenge = false;
+        }
     }
 }
 
-function createBullets(){
-
-    bullets = game.add.group();
-
-    for (let i = 0; i < 15; i++){ //Populate the group with 15 bullets (to avoid killing and spawning repeatedly)
-
-        let bullet = game.add.sprite(alien.x, 700, 'bullet');
-
-        bullet.anchor.setTo(0.5, 0.5);
-        bullet.scale.setTo(0.015, 0.03);
-        bullet.alpha = 0;
-
-        game.physics.arcade.enable(bullet);
-        bullet.enableBody = true;
-
-        bullets.add(bullet);
-    }
+// NEED TO RESTART POSITION
+function challengeFailed() {
+    HUD.setText('TRY AGAIN :(')
+    errorSound.play();
+    playingTheChallenge = false;
+    restartTypeGame();
+    playingTheChallenge = true;
+    remainingTime = THE_CHALLENGE_TIME_LIMIT / 1000;
+    createAlien();
+    createTypeGame();
+    correctAnswers = 0;
+    shuffle(options);
+    console.log(options);
+    setTimeout(challengeFailed, THE_CHALLENGE_TIME_LIMIT);
 }
 
-function shootAlien(){
-
-    bulletCounter = (bulletCounter + 1) % 15; //Cycle counter
-
-    bullets.children[bulletCounter].alpha = 1;
-    bullets.children[bulletCounter].body.velocity.y = BULLET_VELOCITY;
-}

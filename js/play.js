@@ -70,13 +70,11 @@ function preloadPlay() {
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
 
     //-----THE CHALLENGE-----------------------------------
+    game.load.image('bullet', '/assets/imgs/bullet.png');
+
     game.load.image('alien', '/assets/imgs/alien.png');
-    game.load.image('alien death', '/assets/imgs/alienDeath.png');
-    game.load.image('alien hit', '/assets/imgs/alienHit.png');
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
-
-    game.load.image('bullet', '/assets/imgs/bullet.png');
 
     game.load.image('nintendo 64', '/assets/imgs/consoles/nintendo64.png');
     game.load.image('playstation one', '/assets/imgs/consoles/playstationOne.png');
@@ -86,6 +84,20 @@ function preloadPlay() {
     game.load.image('gameboy', '/assets/imgs/consoles/gameboy.png');
     game.load.image('playstation two', '/assets/imgs/consoles/playstationTwo.png');
     game.load.image('snes', '/assets/imgs/consoles/snes.png');
+
+    game.load.audio('correctSound', '/assets/sounds/correct.mp3');
+    game.load.audio('incorrectSound', '/assets/sounds/error.mp3');
+    game.load.audio('keyboardSound', '/assets/sounds/keyboard.mp3');
+
+    //----- PLATFORMS -----------------------------------
+    game.load.image('tetris1', '/assets/imgs/Tetris1.png');
+    game.load.image('tetris2', '/assets/imgs/Tetris2.png');
+    game.load.image('tetris3', '/assets/imgs/Tetris3.png');
+    game.load.image('tetris4', '/assets/imgs/Tetris4.png');
+    game.load.image('tetris5', '/assets/imgs/Tetris5.png');
+    game.load.image('tetris6', '/assets/imgs/Tetris6.png');
+    game.load.audio('tetrisCollision', '/assets/sounds/tetris_clear.mp3');
+    game.load.audio('tetrisMovement', '/assets/sounds/tetris_movement.mp3');
 }
 
 function createPlay() {

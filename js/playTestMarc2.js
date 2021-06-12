@@ -331,8 +331,6 @@ function updateHUDC() {
     HUD.setText("Remaining jumps: " + remainingJumps);
 }
 
-
-
 // PARTE B
 function createAlien() {
     alien = game.add.sprite(player.x + 100, 0, 'alien');
@@ -501,7 +499,7 @@ function restartTypeGame() {
         timer.destroy();
         alien.destroy();
         typing.destroy();
-        //game.state.start('hof');
+
         game.input.keyboard.enabled = true;
         game.input.keyboard.onDownCallback = null;
     }
