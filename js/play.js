@@ -1,11 +1,14 @@
+const PLAYER_STARTING_POINT = 200;
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 600; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 650;
 const JUMP_LIMIT = 4;
 
 const CHECKPOINT_A_XPOS = 100;
-const CHECKPOINT_B_XPOS = 100;
+const CHECKPOINT_B_XPOS = 5950;
 const CHECKPOINT_C_XPOS = 8000;
+
+const PARTC_END = 10600;
 
 let remainingJumps = JUMP_LIMIT;
 
@@ -89,6 +92,11 @@ function preloadPlay() {
 
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
+
+    game.load.audio('pongstart', './assets/sounds/pongon.mp3');
+    game.load.audio('pong1', './assets/sounds/pongD.mp3');
+    game.load.audio('pong2', './assets/sounds/pongF.mp3');
+    game.load.audio('pongscored', './assets/sounds/pongscored.mp3');
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('bullet', '/assets/imgs/bullet.png');
@@ -220,27 +228,30 @@ function updatePlay() {
             if(level_2_created) updateTheChallenge();
         } 
         partB_score = partBScore();
+
     //#endregion
 
     //#region LEVEL 3
-                            // Start at 8300
-    if(!level_3_completed && level_2_completed && player.body.x > CHECKPOINT_C_XPOS + 300 ) {
-        updatePlatformer();
-        level_3 = true;
-        if (player.body.y > GAME_HEIGHT/2 + 250) {
-            player.y = game.world.height - 500;
-            player.x = CHECKPOINT_C_XPOS;
-            resetPlatforms();
-            level_3 = false;
-        }
-    }
     
-    if (player.body.x > 10700) {
-        level_3_completed = true;
-        partC_score = partCScore();
-        level_3 = false;    // Stop decresing number of jumps
-        remainingJumps = 1; // Reset the remaining jumps
-    }
+        if(!level_3_completed && level_2_completed && player.body.x > CHECKPOINT_C_XPOS + 300 ) {
+            updatePlatformer();
+            level_3 = true;
+            if (player.body.y > GAME_HEIGHT/2 + 250) {
+                player.y = game.world.height - 500;
+                player.x = CHECKPOINT_C_XPOS;
+                resetPlatforms();
+                level_3 = false;
+            }
+        }
+        
+        if (player.body.x > PARTC_END) {
+            level_3_completed = true;
+            partC_score = partCScore();
+            level_3 = false;    // Stop decresing number of jumps
+            remainingJumps = 1; // Reset the remaining jumps
+
+            console.log('OLEEE');
+        }
 
     //#endregion
 
@@ -316,7 +327,7 @@ function createCameraSet(){
 
 function createPlayer() {
 
-    let x = 200;                            //Starting point of world 
+    let x = PLAYER_STARTING_POINT;                          //Starting point of world 
     let y = game.world.height - 500;
 
     player = game.add.sprite(x, y, 'player');

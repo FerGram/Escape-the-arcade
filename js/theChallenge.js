@@ -263,19 +263,22 @@ function createTypeGame() {
     game.input.keyboard.onDownCallback = getKeyboardInput; // Calling getKeyboardInput when a key is pressed
 
     // Show the current console to be guessed
-    consoleSprite = game.add.sprite(game.camera.position.x + game.camera.width / 2, 
-                                    game.camera.position.y + game.camera.height / 3,
+    consoleSprite = game.add.sprite(game.camera.position.x + game.camera.width / 8, 
+                                    game.camera.position.y + game.camera.height * 0.75,
                                     options[currentWordIndex]);
     consoleSprite.alpha = 0;
+    consoleSprite.scale.setTo(1.4, 1.4);
+    consoleSprite.smoothed = false;
+
     game.add.tween(consoleSprite).to( { alpha: 1 }, 100, "Linear", true);
-console.log(currentWordIndex);
+   
     // Prepare the current word
     option = options[currentWordIndex];
 
-    typing = game.add.text(game.camera.position.x + game.camera.width / 1.5, 
+    typing = game.add.text(game.camera.position.x + 100, 
                             game.camera.position.y + game.camera.height / 2, 
                             "_ ".repeat(option.length) , 
-                            {fontSize: '20px', fill: '#FA2', font: 'Verdana'});
+                            {fontSize: '20px', fill: '#A5FFFF', font: 'Verdana'});
 }
 
 // Chooses new word and resets all timers and sprites

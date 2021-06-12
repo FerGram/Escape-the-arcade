@@ -59,9 +59,9 @@ function createPlatforms() {
             tetrisType[1] = 'tetris6';
         }
 
-        let yposition =Math.random() * (GAME_HEIGHT/2 + 200 - (GAME_HEIGHT/2 + 75)) + GAME_HEIGHT/2 + 75;
+        let yposition = Math.random() * (GAME_HEIGHT/2 + 200 - (GAME_HEIGHT/2 + 75)) + GAME_HEIGHT/2 + 75;
         platform = game.add.sprite(PLATFORMS_STARTING_X + i * 800, yposition, tetrisType[0]); // Cuidado con la X
-        //platform.scale.setTo(0.1, 0.1);
+
         movingPlatforms.add(platform);
         platform.body.immovable = true;
         platform.body.onCollide = new Phaser.Signal();
@@ -73,7 +73,7 @@ function createPlatforms() {
     }
 }
 
-function createSoundsPlatformer() {
+function createSoundsPlatformer() {  // This is called at the create phase of play.js
     tetrisSoundCollision = game.add.sound('tetrisCollision');
     tetrisSoundMovement = game.add.sound('tetrisMovement');
 }

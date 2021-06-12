@@ -21,6 +21,11 @@ let fireBall;
 let energy = 6;
 let energySprite;
 
+let pongStartSound;
+let pongScoredSound;
+let pongSound1;
+let pongSound2;
+
 const SPAWN_BALL_TIME = 7500; //In miliseconds
 const BALL_VELOCITY = 500;
 const FIREBALL_VELOCITY = 1.5;
@@ -31,22 +36,25 @@ const INVULNERAVILITY_SEC = 1500; //In milliseconds
 
 function createPONG() {
 
+    createSoundsPong();
+
     balls = game.add.group();
     pongGroup = game.add.group();
     pongGroup.enableBody = true;
 
     hitTimer = game.time.create(false);
     
-
     hitTimer.add(1000, createBlackBG);
     hitTimer.add(1500, createPongPlayers);
-    hitTimer.add(3000, createStage);
-    hitTimer.add(4500, createScore);
-    hitTimer.add(6000, createBall);
-    hitTimer.add(6000, createTimer);
-    hitTimer.add(6000, createEnergy);
+    hitTimer.add(2000, createStage);
+    hitTimer.add(2500, createScore);
+    hitTimer.add(5000, createBall);
+    hitTimer.add(5000, createTimer);
+    hitTimer.add(5000, createEnergy);
 
     hitTimer.start();
+
+    pongStartSound.play();
 }
 
 function updatePONG() {
@@ -78,15 +86,29 @@ function updatePONG() {
 function ballMovement() {
     balls.forEach(ball => {
 
-        if(game.physics.arcade.collide(ball, pongPlayer1)) ball.body.velocity.x = BALL_VELOCITY;
-        else if(game.physics.arcade.collide(ball, pongPlayer2)) ball.body.velocity.x = -BALL_VELOCITY;
+        if(game.physics.arcade.collide(ball, pongPlayer1)) {
+            ball.body.velocity.x = BALL_VELOCITY;
+            pongSound1.play();
+        }
+        else if(game.physics.arcade.collide(ball, pongPlayer2)) {
+            ball.body.velocity.x = -BALL_VELOCITY;
+            pongSound1.play();
+        }
 
         //Collides with top/bottom limits
-        else if (ball.body.blocked.up) ball.body.velocity.y = BALL_VELOCITY;
-        else if (game.physics.arcade.collide(ball, layer)) ball.body.velocity.y = -BALL_VELOCITY;
+        else if (ball.body.blocked.up) {
+            ball.body.velocity.y = BALL_VELOCITY;
+            pongSound2.play();
+        }
+        else if (game.physics.arcade.collide(ball, layer)) {
+            ball.body.velocity.y = -BALL_VELOCITY; 
+            pongSound2.play();
+        }
 
         //Collides with left/right limits
         else if (ball.body.x > pongPlayer2.body.x + 30 || ball.body.x < pongPlayer1.body.x - 30) {
+            
+            pongScoredSound.play();
             if (ball.body.x < pongPlayer1.body.x - 30) {
                 player2Score++;
                 player2ScoreLabel.text = player2Score;
@@ -235,6 +257,14 @@ function createStage(){
     middle4.scale.setTo(0.015, 0.1);
 
     game.world.bringToTop(player);
+}
+
+
+function createSoundsPong() {
+    pongStartSound = game.add.sound('pongstart');
+    pongSound1 = game.add.sound('pong1');
+    pongSound2 = game.add.sound('pong2');
+    pongScoredSound = game.add.sound('pongscored');
 }
 
 function resetBall(ball) {
