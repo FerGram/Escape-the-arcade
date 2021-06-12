@@ -28,24 +28,50 @@ let gunOffsetX = 2;
 let gunOffsetY = 7;
 let gunTip;
 
+let ak47Scale = 1;
+let pistolScale = 0.15;
+
+let ak47OffsetX = 2;
+let ak47OffsetY = 7;
+
+let pistolOffsetX = 15;
+let pistolOffsetY = 5;
+let pistolTip;
+
 let bullet;
 let bulletScale = 1;
 
+let alienBullets;
+let alienBulletsScale = 1;
+let livingAliens = [];
+
+//Player fire vars
 let fireSpeed = 50; //firerate
 let fireCooldown = 0; //var to wait between fires.
+
+//Alien fire vars
+let alienBulletSpd = 350;
+let alienFiringTimer = 1500;
 
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
 
-//paralax
-let sky;
-let rocks;
-let clouds;
-let trees;
+//Paralax
+let bg1;
+let bg2;
+let bg3;
+let bg4;
 
-//let enemy;
-
+//Aliens;
 let aliens;
+let alienScale = 2.5;
+
+//Boss
+let boss;
+let isWalkingBoss;
+let isJumpingBoss;
+
+let mousePressedDown = false;
 
 let playState = {
     preload: preloadPlay,
@@ -55,25 +81,30 @@ let playState = {
 };
 
 function preloadPlay() {
-    //Loading the spritesheet for the player
+    //Spritesheet for the player
     game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 32, 32, 23);
 
     //Tilemap and level
-    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.tilemap('map', './assets/levels/levelExtra.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/TF.png');
 
-    //Ak-47 and bullet
+    //Guns and bullets
     game.load.spritesheet('gun', './assets/imgs/AK47.png', 84, 30, 20);
+    game.load.image('pistol', './assets/imgs/pistol.png');
     game.load.image('gunTip', './assets/imgs/gunTip.png');
 
     game.load.image('playerBullet', './assets/imgs/bullet_H1.png');
     game.load.image('enemyBullet', './assets/imgs/bullet_H2.png');
 
+    //Enemies
+    game.load.spritesheet('smallAliens', './assets/imgs/phase4/smallAliens.png', 14, 14, 4);
+    game.load.image('greenAlien', './assets/imgs/phase4/greenAlien.png');
+
     //paralax
-    game.load.image('sky', './assets/imgs/layer06_sky.png');
-    game.load.image('rocks', './assets/imgs/layer05_rocks.png');
-    game.load.image('clouds', './assets/imgs/layer04_clouds.png');
-    game.load.image('trees', './assets/imgs/layer03_trees.png');
+    game.load.image('bg1', './assets/imgs/phase4/bgs/background_1.png');
+    game.load.image('bg2', './assets/imgs/phase4/bgs/background_2.png');
+    game.load.image('bg3', './assets/imgs/phase4/bgs/background_3.png');
+    game.load.image('bg4', './assets/imgs/phase4/bgs/background_4.png');
 }
 
 function createPlay() {
@@ -100,13 +131,13 @@ function createPlay() {
 
 
     createAliens();
+    createAlienBullets();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
-    createGun();
+    createPistol();
     createBullets();
 
-    gun.position.setTo(gunOffsetX + 150, gunOffsetY + 150);
 }
 
 function createKeyControls() {
@@ -115,26 +146,29 @@ function createKeyControls() {
 
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
-    //game.physics.arcade.overlap(enemy.obj, bullets, collisionOfEnemyWithBullets, null, this);
+
     game.physics.arcade.overlap(bullets, aliens, collisionOfBulletsWithAliens, null, this);
     playerMovement();
     scrollBackground();
-    gun.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
+    gun.obj.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
     gunRotation();
 
     if (game.input.activePointer.leftButton.isDown){
-        shootAK47();
+        if (gun.name == "ak47")
+            shootAK47();
+        else{
+            if (!mousePressedDown){
+                mousePressedDown = true;
+                shootAK47();
+            }
+        }
+    }
+    else{
+        mousePressedDown = false;
     }
 
-}
-
-function collisionOfEnemyWithBullets(e, b){
-    console.log("hit enemy");
-    console.log(e.p.hp);
-    e.p.hp--;
-    if (e.p.hp <= 0){
-        e.visible = false; //Edit disable instead.
-    }
+    if (game.time.now > alienFiringTimer)
+        fireAliens();
 }
 
 function collisionOfBulletsWithAliens(b, a){
@@ -207,18 +241,37 @@ function createPlayer() {
     player.anchor.setTo(0.5, 0.5);
 }
 
-function createGun(){
-    gun = game.add.sprite(100, 100, 'gun');
+function createAk47(){
+    gun = createGun("ak47", game.add.sprite(100, 100, 'gun'));
 
-    gun.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 24, false);
-    gun.anchor.setTo(0.7, 0.5);
-    gun.scale.setTo(-1 * gunScale, gunScale);
+    gun.obj.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 24, false);
+    gun.obj.anchor.setTo(0.3, 0.5);
+    gunScale = ak47Scale;
 
     gunTip = game.add.sprite(0, 0, 'gunTip');
     gunTip.anchor.setTo(0.5, 0.5);
-    gun.addChild(gunTip);
-    gunTip.position.x = -60;
-    gunTip.position.y = -10;
+    gun.obj.addChild(gunTip);
+    gunTip.position.x = 60;
+    gunTip.position.y = -5;
+
+    gunOffsetX = ak47OffsetX;
+    gunOffsetY = ak47OffsetY;
+}
+
+function createPistol(){
+    gun = createGun("pistol", game.add.sprite(0, 0, 'pistol'));
+    gun.obj.anchor.setTo(0.3, 0.5);
+    gunScale = pistolScale;
+
+    gunTip = game.add.sprite(0, 0, 'gunTip');
+    gunTip.anchor.setTo(0.5, 0.5);
+    gun.obj.addChild(gunTip);
+    gunTip.position.x = 170;
+    gunTip.position.y = -70;
+
+    gunOffsetX = pistolOffsetX;
+    gunOffsetY = pistolOffsetY;
+
 }
 
 function createBullets(){ //TODO Bullets break with world bounds, should break with screen bounds or should be a bigger pool
@@ -230,6 +283,21 @@ function createBullets(){ //TODO Bullets break with world bounds, should break w
     bullets.setAll('checkWorldBounds', true);
     bullets.setAll('outOfBoundsKill', true); //TODO fix, only kills bullets when out of world bounds, not cameras, player runs of of bullets.
     bullets.setAll('body.allowGravity', false);
+    bullets.setAll('anchor.x', 0.5);
+    bullets.setAll('anchor.y', 0.5);
+}
+
+function createAlienBullets(){ //TODO Bullets break with world bounds, should break with screen bounds or should be a bigger pool
+    alienBullets = game.add.group();
+    alienBullets.enableBody = true;
+    alienBullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+    alienBullets.createMultiple(35, 'playerBullet');
+    alienBullets.setAll('checkWorldBounds', true);
+    alienBullets.setAll('outOfBoundsKill', true); //TODO fix, only kills alienBullets when out of world bounds, not cameras, player runs of of alienBullets.
+    alienBullets.setAll('body.allowGravity', false);
+    alienBullets.setAll('anchor.x', 0.5);
+    alienBullets.setAll('anchor.y', 0.5);
 }
 
 function createAliens(){
@@ -239,34 +307,68 @@ function createAliens(){
     aliens.enableBody = true;
     aliens.physicsBodyType = Phaser.Physics.ARCADE;
 
-    for (let y = 0; y < 5; y++){
-        for (let x = 0; x < 20; x++){
-            let alien = createEnemy(aliens.create(x * 64, y * 32, 'player'));
+    let alien;
+    let cols = 9;
+    let rows = 4;
+    for (let y = 0; y < rows; y++){
+        for (let x = 0; x < cols; x++){
+            if ((x == 0 || x == cols - 1) && y == 0)
+                alien = createEnemy(aliens.create(x * 64, y * 64, 'greenAlien'));
+            else{
+                alien = createEnemy(aliens.create(x * 64, y * 64, 'smallAliens'));
+                alien.frame = getRandomInt(0, 3);
+            }
+
 
             alien.anchor.setTo(0.5, 0.5);
+            alien.scale.setTo(alienScale, alienScale);
             alien.body.moves = false;
         }
     }
 
-    aliens.x = 600;
-    aliens.y = 300;
+    aliens.x = 200;
+    aliens.y = 350;
 
-    var alienTween = game.add.tween(aliens).to( { x: 200 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+    let alienTween = game.add.tween(aliens).to( { x: 400 }, 1500, Phaser.Easing.Linear.None, true, 0, 1000, true);
 
-    alienTween.onLoop.add(descendAliens, this);
+    alienTween.onRepeat.add(descendAliens, this);
 }
 
 function descendAliens(){
-    aliens.position.y += 50;
+    aliens.y += 30;
+    console.log("Descending..");
+
+    //if () TODO add safe position, where the y is reset before they touch the ground.
+}
+
+function fireAliens(){
+    alienBullet = alienBullets.getFirstExists(false);
+
+    livingAliens.length = 0;
+
+    aliens.forEachAlive(function(alien){
+        livingAliens.push(alien);
+    });
+
+    if (alienBullet && livingAliens.length > 0){
+        let rd = game.rnd.integerInRange(0, livingAliens.length - 1);
+
+        let shooter = livingAliens[rd];
+
+        alienBullet.reset(shooter.body.x, shooter.body.y);
+
+        game.physics.arcade.moveToObject(alienBullet, player, alienBulletSpd);
+        alienFiringTimer = game.time.now + 1500;
+    }
 }
 
 function gunRotation(){
-    gun.rotation = game.physics.arcade.angleToPointer(gun);
-    if (gun.angle < -90 || gun.angle > 90){ //TODO add bool to check if it is already rotated.
-        gun.scale.setTo(gunScale * -1, gunScale * -1);
+    gun.obj.rotation = game.physics.arcade.angleToPointer(gun.obj);
+    if (gun.obj.angle < -90 || gun.obj.angle > 90){ //TODO add bool to check if it is already rotated.
+        gun.obj.scale.setTo(gunScale, gunScale * -1);
     }
     else{
-        gun.scale.setTo(gunScale * -1, gunScale);
+        gun.obj.scale.setTo(gunScale, gunScale);
     }
 }
 
@@ -275,49 +377,54 @@ function createLevel(){
     map = game.add.tilemap('map');
     map.addTilesetImage('TF', 'tiles');
 
-    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); //Update in BU2
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
+    map.setCollisionByExclusion([67]);
+
     //layer.debug = true;
 }
 
 function renderPlay(){
-    game.debug.spriteInfo(gun, 32, 32);
+    //game.debug.spriteInfo(gun, 32, 32);
 
 }
 
 function createBackground(){
-    sky = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'sky');
-    rocks = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'rocks');
-    clouds = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'clouds');
-    trees = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'trees');
 
-    trees.sendToBack();
-    clouds.sendToBack();
-    rocks.sendToBack();
-    sky.sendToBack();
+    game.stage.backgroundColor = "#000003";
 
-    sky.fixedToCamera = true;
-    rocks.fixedToCamera = true;
-    clouds.fixedToCamera = true;
-    trees.fixedToCamera = true;
+    bg1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg1');
+    //bg2 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg2');
+    //bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
+    bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
+
+    bg1.sendToBack();
+    //bg2.sendToBack();
+    //bg3.sendToBack();
+    bg4.sendToBack();
+
+    bg1.fixedToCamera = true;
+    //bg2.fixedToCamera = true;
+    //bg3.fixedToCamera = true;
+    bg4.fixedToCamera = true;
 
 }
 
 function scrollBackground(){
-    sky.tilePosition.x = game.camera.x * -0.1;
-    rocks.tilePosition.x = game.camera.x * -0.2;
-    clouds.tilePosition.x = game.camera.x * -0.3;
-    trees.tilePosition.x = game.camera.x * -0.4;
+
+    bg1.tilePosition.y += 0.6;
+    //bg2.tilePosition.y += -0.3;
+    //bg3.tilePosition.y += -0.2;
+    bg4.tilePosition.y += 1;
 }
 
 function shootAK47(){
 
     if (game.time.now > fireCooldown && bullets.countDead() > 0){
 
-        gun.animations.play('shoot');
+        //gun.obj.animations.play('shoot');
 
         fireCooldown = game.time.now + fireSpeed;
 
@@ -325,7 +432,7 @@ function shootAK47(){
 
         bullet.reset(gunTip.world.x, gunTip.world.y);
 
-        bullet.rotation = gun.rotation;
+        bullet.rotation = gun.obj.rotation;
         game.physics.arcade.moveToPointer(bullet, 700);
     }
 }
@@ -340,11 +447,28 @@ function createEnemy(spr){
     return enemy.obj;
 }
 
+function createGun(name, spr){
+    return new Gun(name, spr);
+}
+
+//Generates random int between min and max.
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 class Enemy1{
     constructor(enemy){
         this.hp = 3;
 
         this.obj = enemy;
+        this.obj.p = this;
+    }
+}
+
+class Gun{
+    constructor(n, g){
+        this.name = n;
+        this.obj = g;
         this.obj.p = this;
     }
 }
