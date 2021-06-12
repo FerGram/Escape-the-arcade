@@ -2,6 +2,8 @@ const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 800; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 800;
 
+const CHECKPOINT_A_XPOS = 100;
+
 let player;
 let cursors;
 let platforms;
@@ -30,7 +32,7 @@ let level_1_created = false;
 let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = false;
+let level_2_completed = true;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
@@ -127,7 +129,6 @@ function updatePlay() {
                 game.camera.unfollow();
                 game.time.events.add(6000, function()
                                         {letPlayerMove = true;});
-
                 createPONG();
                 level_1_created = true;
             }
@@ -282,7 +283,7 @@ function createLevel() {
     map.addTilesetImage('TF', 'tiles');
 
     //Sets collision to all tile layers except the ones below
-    map.setCollisionByExclusion([-1, 0, 1, 2, 3, 196, 197, 199, 200, 201, 208, 421, 422, 453, 454, 544]); 
+    map.setCollisionByExclusion([-1, 0, 1, 2, 3, 196, 197, 199, 200, 201, 208, 421, 422, 453, 454, 543, 544, 545]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);

@@ -1,6 +1,6 @@
 // Creating part's B game mechanic
 
-const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
+const DISAPPEARANCE_TIME = 10000; // Five secons instead of the wanted 30
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 4;
 const BULLET_VELOCITY = -800;

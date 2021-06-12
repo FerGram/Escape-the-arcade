@@ -11,7 +11,7 @@ let pongPlayer2Velocity = 500;
 
 let player1Score = 0;
 let player2Score = 0;
-let player1ScoreLabel, player2ScoreLabel;
+let player1ScoreLabel, player2ScoreLabel, endText;
 
 let canStartGame = false;
 let stageMiddle;
@@ -47,7 +47,6 @@ function createPONG() {
 }
 
 function updatePONG() {
-
     if (!canStartGame) return;
 
     ballMovement();
@@ -128,7 +127,7 @@ function updateTimer(){ //This is a time event callback
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 10) stopGame();
+    if (minutes == 0 && seconds > 50) stopGame();
 }
 
 function createBlackBG(){
@@ -146,6 +145,7 @@ function createTimer(){
 
     game.world.bringToTop(layer);
     game.world.bringToTop(player);
+    game.world.bringToTop(arcadeMachine);
 }
 
 function createPongPlayers() {
@@ -249,7 +249,7 @@ function stopGame(){
     pongPlayer2.body.velocity = 0;
 
 
-    let endtext = game.add.text(stageMiddle, game.height/2 - 150,
+    endtext = game.add.text(stageMiddle, game.height/2 - 150,
         (player1Score > player2Score? "Player 1 WINS" : "Player 2 WINS"),
         {font:'50px Arial', fill: "#FF0000"});
     endtext.anchor.setTo(0.5, 0.5);
@@ -285,6 +285,41 @@ function createEnergy(){
 function updateEnergy(){
 
     energySprite.loadTexture('battery' + energy);
+
+    if (energy <= 5){
+
+        resetGame();
+    }
+
+}
+
+function resetGame(){
+    player.body.x = CHECKPOINT_A_XPOS;
+
+    canStartGame = false;
+    gameTimer.timer.destroy();
+    gameBallSpawner.timer.destroy();
+
+    balls.forEach(ball => {
+        ball.destroy();
+    });
+
+    energy = 6;
+    energySprite.destroy();
+
+    pongPlayer1.destroy();
+    pongPlayer2.destroy();
+
+    player1ScoreLabel.destroy();
+    player2ScoreLabel.destroy();
+
+    level_1_completed = false;
+    level_1_created = false;
+    level_1 = false;
+
+    game.stage.backgroundColor = '#18C4BC';
+
+    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
 
