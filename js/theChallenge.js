@@ -39,7 +39,7 @@ function createTheChallenge() {
 
     createAlien();
     createBullets();
-    createSounds();
+    createSoundsChallenge();
 
    // Only shuffle the first time around
    if(correctAnswers == 0){
@@ -90,7 +90,7 @@ function alienMovement() {
 }
 
 // Sounds for the keyboard, correct, error and gun
-function createSounds() {
+function createSoundsChallenge() {
     keyboardSounds = game.add.sound('keyboardSound');
     keyboardSounds.allowMultiple = true;
     keyboardSounds.addMarker('1', 0, 0.2);
@@ -281,7 +281,7 @@ console.log(currentWordIndex);
 // Chooses new word and resets all timers and sprites
 function restartTypeGame() {
 
-    if (correctAnswers < maxCorrectWords & playingTheChallenge) {
+    if (correctAnswers < maxCorrectWords && playingTheChallenge) {
 
         if (currentWordIndex > options.length-1) 
         currentWordIndex = 0;
@@ -319,6 +319,7 @@ function restartTypeGame() {
         game.input.keyboard.onDownCallback = null;
         level_2_completed = true;
         playingTheChallenge = false;
+        theChallengeScore = remainingTime;
         }
     }
 }
@@ -339,3 +340,6 @@ function challengeFailed() {
     setTimeout(challengeFailed, THE_CHALLENGE_TIME_LIMIT);
 }
 
+function partBScore() {
+    return theChallengeScore;
+}

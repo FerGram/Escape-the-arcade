@@ -1,8 +1,11 @@
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 800; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 800;
+const JUMP_LIMIT = 4;
 
 const CHECKPOINT_A_XPOS = 100;
+
+let remainingJumps = JUMP_LIMIT;
 
 let player;
 let cursors;
@@ -32,13 +35,28 @@ let level_1_created = false;
 let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = false;
+let level_2_completed = true;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
 
+let partA_score;
+let partB_score;
+let partC_score;
+let partD_score;
+
 let cameraTween;
 
+// ~~PART C VARIABLES~~
+const PLATFORMS_STARTING_X = 7500;
+
+let movingPlatforms;
+let stationaryPlatforms;
+
+let firstTimeC = true;
+let playingPartC = false;
+
+// GAME
 let playState = {
     preload: preloadPlay,
     create: createPlay,
@@ -110,6 +128,8 @@ function createPlay() {
     createLevel();
     createPlayer();
     createKeyControls();
+    createPlatforms();
+    createSoundsPlatformer();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
@@ -120,7 +140,8 @@ function createKeyControls() {
 
 function updatePlay() {
 
-    isGrounded = game.physics.arcade.collide(player, layer);
+    isGrounded = game.physics.arcade.collide(player, layer) || game.physics.arcade.collide(player, movingPlatforms) 
+                                                            || game.physics.arcade.collide(player, stationaryPlatforms);
 
     //#region LEVEL 1
 
@@ -154,7 +175,7 @@ function updatePlay() {
     //#region LEVEL 2
 
         //Set level_2 in progress           DEFAULT VALUES: 5600 & 6200
-        if (!level_2 & !level_2_completed & player.body.x > 5600 & player.body.x < 6200) {
+        if (!level_2 & !level_2_completed & player.body.x > 5950 & player.body.x < 6900) {
 
             console.log('LEVEL 2');
             level_2 = true; 
@@ -189,6 +210,7 @@ function updatePlay() {
             level_2 = false;
             letPlayerMove = true;
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+            partB_score = partBScore();
         }
 
         //Update level_2
@@ -196,6 +218,21 @@ function updatePlay() {
 
             if(level_2_created) updateTheChallenge();
         } 
+        partB_score = partBScore();
+    //#endregion
+
+    //#region LEVEL 3
+                            // Start at 8300
+    if(!level_3_completed && level_2_completed && player.body.x > 8300 ) {
+        updatePlatformer();
+        level_3 = true;
+    }
+    if (player.body.x > 10800) {
+        level_3_completed = true;
+        partC_score = partCScore();
+        level_3 = false;    // Stop decresing number of jumps
+        remainingJumps = 1; // Reset the remaining jumps
+    }
 
     //#endregion
 
@@ -236,9 +273,13 @@ function playerMovement() {
             player.body.velocity.x = 0; //change velocity on x to 0.
         }
         //Jumping
-        if (player.body.onFloor() && cursors.up.isDown){
+        if ( isGrounded && cursors.up.isDown && remainingJumps > 0){ //player.body.onFloor()
             player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
             isGrounded = false;
+            if (level_3) { // for the limit on the jumps of part 3
+                remainingJumps -= 1;
+                updateHUDplatformer();
+            }
         }
     }
     else{
@@ -267,7 +308,7 @@ function createCameraSet(){
 
 function createPlayer() {
 
-    let x = 200;                            //Starting point of world 
+    let x = 8000;                            //Starting point of world 
     let y = game.world.height - 500;
 
     player = game.add.sprite(x, y, 'player');
