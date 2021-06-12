@@ -14,9 +14,9 @@ function preloadHall() {
 
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
-    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/imgs/Terrain.png');
-    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
+    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', './assets/imgs/TF.png');
+    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 }
 
@@ -123,8 +123,8 @@ function createHallPlayer() {
     player = game.add.sprite(x, y, 'player');
 
     //Create animations
-    player.animations.add('idle', [0, 1, 2, 3, 4, 5, 6, 7 ,8 ,9, 10], 12, true);
-    player.animations.add('walk', [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 12, true);
+    player.animations.add('idle', [0, 1, 2, 3, 4], 8, true);
+    player.animations.add('walk', [5, 6, 7, 8], 10, true);
 
     player.animations.play('idle');
     player.anchor.setTo(0.5, 0.5);
@@ -141,9 +141,9 @@ function createHallPlayer() {
 function createHallLevel() {
 
     map = game.add.tilemap('map');
-    map.addTilesetImage('Terrain', 'tiles');
+    map.addTilesetImage('TF', 'tiles');
 
-    map.setCollisionBetween(0, 60);
+    map.setCollisionByExclusion([-1, 544]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);

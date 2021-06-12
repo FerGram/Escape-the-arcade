@@ -1,5 +1,5 @@
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 1500; //DEFAULT 500, changed for debugging
+const PLAYER_VELOCITY = 800; //DEFAULT 500, changed for debugging
 const PLAYER_JUMP_VELOCITY = 800;
 
 let player;
@@ -9,7 +9,7 @@ let ground;
 let isGrounded = false;
 let isWalking = false;
 let isFlipped = false; //Is he looking left?
-let playerScale = 2; 
+let playerScale = 3.5; 
 let letPlayerMove = true;
 
 let tweeningPlayer = false; //Also used in the Hall state animation
@@ -27,10 +27,10 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; //CHANGED TO TRUE JUST FOR DEBUGGING
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = true;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
@@ -48,8 +48,8 @@ function preloadPlay() {
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain.jpg');
 
-    game.load.tilemap('map', './assets/levels/level3.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/imgs/Terrain.png');
+    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', './assets/imgs/TF.png');
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 
     //------PONG--------------------------------------------
@@ -58,8 +58,16 @@ function preloadPlay() {
     game.load.image('middle','/assets/imgs/WhiteSquare.jpg');
     game.load.image('players','/assets/imgs/WhiteSquare.jpg');
 
+    game.load.image('battery0','/assets/imgs/Battery0.png');
+    game.load.image('battery1','/assets/imgs/Battery1.png');
+    game.load.image('battery2','/assets/imgs/Battery2.png');
+    game.load.image('battery3','/assets/imgs/Battery3.png');
+    game.load.image('battery4','/assets/imgs/Battery4.png');
+    game.load.image('battery5','/assets/imgs/Battery5.png');
+    game.load.image('battery6','/assets/imgs/Battery6.png');
+
     game.load.image('ground1','./assets/imgs/GreenSquare.png')
-    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 32, 32, 23);
+    game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('alien', '/assets/imgs/alien.png');
@@ -85,8 +93,8 @@ function createPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     createCameraSet();
-    createPlayer();
     createLevel();
+    createPlayer();
     createKeyControls();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -97,12 +105,13 @@ function createKeyControls() {
 }
 
 function updatePlay() {
+
     isGrounded = game.physics.arcade.collide(player, layer);
 
     //#region LEVEL 1
 
         //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
-        if (!level_1 & !level_1_completed & player.body.x > 1950 & player.body.x < 2050) level_1 = true;
+        if (!level_1 & !level_1_completed & player.body.x > 2600 & player.body.x < 2800) level_1 = true;
 
         //Set level_1 completed
         if (level_1_completed & level_1) {
@@ -131,17 +140,30 @@ function updatePlay() {
     //#region LEVEL 2
 
         //Set level_2 in progress           DEFAULT VALUES: 5600 & 6200
-        if (!level_2 & !level_2_completed & player.body.x > 5600 & player.body.x < 6200) {
+        if (!level_2 & !level_2_completed & player.body.x > 5950 & player.body.x < 6900) {
 
             level_2 = true; 
 
             letPlayerMove = false;
             game.camera.unfollow();
 
+
+            //Add text: 'TYPE THE CONSOLES'
+            stageMiddle = game.camera.position.x + game.camera.width/2;
+
+            let instruction = game.add.text(stageMiddle - 350, 3*GAME_HEIGHT/4, 
+                'TYPE THE CONSOLES', {font:'50px Verdana', fill: "#FFFFFF"});
+
+            instruction.alpha = 0;
+            game.add.tween(instruction).to( { alpha: 1 }, 400, "Linear", true, 0, 0, false);
+
+
+            //Tween camera
             cameraTween = game.add.tween(game.camera).to( { x: 5500 }, 2000, "Linear", true, 0, 0, false);
             cameraTween.onComplete.add(function(){
 
                 level_2_created = true;
+                instruction.destroy();
                 createTheChallenge();
             });
         }
@@ -163,7 +185,7 @@ function updatePlay() {
     //#endregion
 
     //END GAME
-    if (player.body.x > 9425 & !tweeningPlayer){
+    if (player.body.x > 10800 & !tweeningPlayer){
 
         letPlayerMove = false;
         tweeningPlayer = true;
@@ -236,12 +258,12 @@ function createPlayer() {
     player = game.add.sprite(x, y, 'player');
 
     //Create animations
-    player.animations.add('idle', [0, 1, 2, 3, 4, 5, 6, 7 ,8 ,9, 10], 12, true);
-    player.animations.add('walk', [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 12, true);
+    player.animations.add('idle', [0, 1, 2, 3, 4], 8, true);
+    player.animations.add('walk', [5, 6, 7, 8], 10, true);
 
     player.animations.play('idle');
     player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(0.1, 0.1);
+    player.scale.setTo(playerScale, playerScale);
 
     game.physics.arcade.enable(player);
 
@@ -257,16 +279,17 @@ function createPlayer() {
 function createLevel() {
 
     map = game.add.tilemap('map');
-    map.addTilesetImage('Terrain', 'tiles');
+    map.addTilesetImage('TF', 'tiles');
 
     //Sets collision to all tile layers except the ones below
-    map.setCollisionByExclusion([88, 89, 90, 91, 110, 111, 112, 113, 132, 133, 134, 135]); 
+    map.setCollisionByExclusion([-1, 0, 1, 2, 3, 196, 197, 199, 200, 201, 208, 421, 422, 453, 454, 544]); 
 
     layer = map.createLayer('layer1');
     layer.setScale(2, 2);
     layer.resizeWorld();
+    //layer.debug = true;
 
-    arcadeMachine = game.add.sprite(9550, 715, 'arcadeMachine');
+    arcadeMachine = game.add.sprite(10900, 715, 'arcadeMachine');
     arcadeMachine.anchor.setTo(0.5, 0.5);
     arcadeMachine.scale.setTo(0.25, 0.25);
 }

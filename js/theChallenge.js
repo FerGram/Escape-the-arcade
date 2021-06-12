@@ -4,7 +4,7 @@ const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 4;
 const BULLET_VELOCITY = -800;
-let ALIEN_DOWN_VELOCITY = 0.5;
+let ALIEN_DOWN_VELOCITY = 0.75;
 
 let alien;
 let timer;
@@ -34,7 +34,10 @@ function createTheChallenge() {
         shuffle(options);
         console.log(options);
     }
+
     createTypeGame();
+
+
 }
 
 function updateTheChallenge() {
@@ -58,7 +61,7 @@ function updateTheChallenge() {
 }
 
 function createAlien() {
-    alien = game.add.sprite(player.x + 680, 200, 'alien');
+    alien = game.add.sprite(player.x + 660, 0, 'alien');
     alien.anchor.setTo(0.5, 0.5);
     alien.scale.setTo(0.1);
 
@@ -93,10 +96,7 @@ function wordCorrectAnswer() {
     });
 
     alien.loadTexture('alien death');
-    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);
-    // game.time.events.add(310, function(){alien.loadTexture('alien death');});
-    // game.time.events.add(500, function(){setTimeout(clearWordScreen, TIMEOUTNEXTWORD)});
-    
+    setTimeout(clearWordScreen, TIMEOUTNEXTWORD);    
 }
 
 // Restart error and correct sprites and alien position
@@ -178,7 +178,7 @@ function createTypeGame() {
     game.input.keyboard.onDownCallback = getKeyboardInput; // Calling getKeyboardInput when a key is pressed
 
     // Show the current console to be guessed
-    consoleSprite = game.add.sprite(game.camera.position.x + game.camera.width / 4, 
+    consoleSprite = game.add.sprite(game.camera.position.x + game.camera.width / 2, 
                                     game.camera.position.y + game.camera.height / 3,
                                     options[currentWordIndex]);
     consoleSprite.alpha = 0;
@@ -187,11 +187,11 @@ function createTypeGame() {
     // Prepare the current word
     option = options[currentWordIndex];
 
-    typing = game.add.text(game.camera.position.x + game.camera.width/2, 
+    typing = game.add.text(game.camera.position.x + game.camera.width / 1.5, 
                             game.camera.position.y + game.camera.height / 2, 
                             "_ ".repeat(option.length) , 
                             {fontSize: '20px', fill: '#FA2'});
-    }
+}
 
 // Chooses new word and resets all timers and sprites
 function restartTypeGame() {
