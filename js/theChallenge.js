@@ -4,7 +4,7 @@ const DISAPPEARANCE_TIME = 5000; // Five secons instead of the wanted 30
 const TIMEOUTNEXTWORD = 2000;
 const maxCorrectWords = 4;
 const BULLET_VELOCITY = -800;
-let ALIEN_DOWN_VELOCITY = 0.5;
+let ALIEN_DOWN_VELOCITY = 0.75;
 
 let alien;
 let timer;
@@ -61,7 +61,7 @@ function updateTheChallenge() {
 }
 
 function createAlien() {
-    alien = game.add.sprite(player.x + 660, 200, 'alien');
+    alien = game.add.sprite(player.x + 660, 0, 'alien');
     alien.anchor.setTo(0.5, 0.5);
     alien.scale.setTo(0.1);
 

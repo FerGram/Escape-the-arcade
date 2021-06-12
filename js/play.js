@@ -27,10 +27,10 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = false; //CHANGED TO TRUE JUST FOR DEBUGGING
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = true;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
 let level_3_completed = false;
@@ -105,13 +105,13 @@ function createKeyControls() {
 }
 
 function updatePlay() {
-    
+
     isGrounded = game.physics.arcade.collide(player, layer);
 
     //#region LEVEL 1
 
         //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
-        if (!level_1 & !level_1_completed & player.body.x > 1950 & player.body.x < 2050) level_1 = true;
+        if (!level_1 & !level_1_completed & player.body.x > 2600 & player.body.x < 2800) level_1 = true;
 
         //Set level_1 completed
         if (level_1_completed & level_1) {
@@ -147,13 +147,8 @@ function updatePlay() {
             letPlayerMove = false;
             game.camera.unfollow();
 
-            cameraTween = game.add.tween(game.camera).to( { x: 5500 }, 2000, "Linear", true, 0, 0, false);
-            cameraTween.onComplete.add(function(){
 
-                level_2_created = true;
-                createTheChallenge();
-            });
-
+            //Add text: 'TYPE THE CONSOLES'
             stageMiddle = game.camera.position.x + game.camera.width/2;
 
             let instruction = game.add.text(stageMiddle - 350, 3*GAME_HEIGHT/4, 
@@ -162,7 +157,15 @@ function updatePlay() {
             instruction.alpha = 0;
             game.add.tween(instruction).to( { alpha: 1 }, 400, "Linear", true, 0, 0, false);
 
-            game.time.events.add(4000, function(){instruction.destroy();});
+
+            //Tween camera
+            cameraTween = game.add.tween(game.camera).to( { x: 5500 }, 2000, "Linear", true, 0, 0, false);
+            cameraTween.onComplete.add(function(){
+
+                level_2_created = true;
+                instruction.destroy();
+                createTheChallenge();
+            });
         }
 
         //Set level_2 completed
