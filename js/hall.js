@@ -1,6 +1,7 @@
 
 //ALL PLAYER VARIABLES IN play.js 
 let arcadeMachine;
+let arcadeMachineX = 1500;
 let playerVelocityReducer = 1;
 let playerJumpVelocityReducer = 1;
 
@@ -15,7 +16,7 @@ function preloadHall() {
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain2.jpg');
     game.load.tilemap('map', './assets/levels/levelHall.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/imgs/TF.png');
+    game.load.image('tiles', './assets/imgs/Hall_Tiles.png');
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 }
@@ -26,12 +27,15 @@ function createHall() {
 
     createHallCameraSet();
 
-    //This goes here because otherwise the arcade would be in front of the player
-    arcadeMachine = game.add.sprite(2000, 710, 'arcadeMachine'); 
-
-    createHallPlayer();
+    
     createHallLevel();
     createHallKeyControls();
+    createHallPlayer();
+    
+    //This goes here because otherwise the arcade would be in front of the player
+    arcadeMachine = game.add.sprite(arcadeMachineX, 710, 'arcadeMachine'); 
+    arcadeMachine.anchor.setTo(0.5, 0.5);
+    arcadeMachine.scale.setTo(0.25, 0.25);
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
@@ -118,7 +122,7 @@ function createHallCameraSet(){
 
 function createHallPlayer() {
     let x = 200;
-    let y = 710;
+    let y = 500;
 
     player = game.add.sprite(x, y, 'player');
 
@@ -136,21 +140,36 @@ function createHallPlayer() {
     player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
+
+    player.body.z = 0;
+
+    player.smoothed = false;
 }
 
 function createHallLevel() {
 
+    // We had errors creating this. Nedded to embed the tileset into the tileset
     map = game.add.tilemap('map');
-    map.addTilesetImage('TF', 'tiles');
+    map.addTilesetImage('Hall_Tiles', 'tiles');
 
-    map.setCollisionByExclusion([-1, 544]); 
+    map.setCollisionByExclusion([121, 544]); 
+    
 
-    layer = map.createLayer('layer1');
+    // Create a different layer for every layer in the JSON
+    layerbg = map.createLayer('fondo');
+    layerbg.smoothed = false;
+    layer1 = map.createLayer('layer1');
+    layer1.smoothed = false;
+    layer = map.createLayer('Front');
+    layer.smoothed = false;
+    
+    
     layer.setScale(2, 2);
+    layer1.setScale(2, 2);
+    layerbg.setScale(2, 2);
     layer.resizeWorld();
 
-    arcadeMachine.anchor.setTo(0.5, 0.5);
-    arcadeMachine.scale.setTo(0.25, 0.25);
+    map.setCollision([122, 141], true, layer);
 }
 
 function tweenHallPlayer(){

@@ -1,0 +1,15 @@
+{ "columns":20,
+ "image":"..\/..\/..\/..\/..\/Downloads\/CdH_TILES.png",
+ "imageheight":320,
+ "imagewidth":320,
+ "margin":0,
+ "name":"Hall_Tiles",
+ "spacing":0,
+ "tilecount":400,
+ "tiledversion":"1.6.0",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#00ff12",
+ "type":"tileset",
+ "version":1.1
+}

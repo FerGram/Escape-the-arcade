@@ -174,11 +174,10 @@ function updatePlay() {
                 createPONG();
 
                 game.camera.unfollow();
-                hitTimer.add(6000, function()
+                hitTimer.add(5000, function()
                                         {letPlayerMove = true;});
                 level_1_created = true;
             }
-
             updatePONG();
         } 
 
