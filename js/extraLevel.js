@@ -516,7 +516,7 @@ class Boss{
     constructor(boss, gt, p, g, b){
         this.game = g;
         this.player = p;
-        this.hp = 5;
+        this.hp = 20;
 
         this.obj = boss;
         this.obj.anchor.setTo(0.5, 0.5);
