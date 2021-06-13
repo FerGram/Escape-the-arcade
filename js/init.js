@@ -4,6 +4,8 @@ const SHIP_OFFSET_VER = 90;
 let btnStart;
 let imgStop;
 
+let firstTime = true;;
+
 let mainTheme;
 let startSound;
 
@@ -54,7 +56,11 @@ function createInit() {
     // SOUNDS
     startSound = game.add.sound('startSound');
     mainTheme = game.add.sound('mainTheme');
-    mainTheme.play();
+    if (firstTime){
+        mainTheme.play();
+        firstTime = false;
+    }
+       
 }
 
 function onStartButtonPressed() {
