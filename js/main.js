@@ -42,6 +42,8 @@ function startGame() {
     game.state.add('hall', hallState);
     // Gameplay Screen
     game.state.add('play', playState);
+    // End Screen
+    game.state.add('end', endState);
     // Some other screen
     game.state.add('hof', hofState);
 
