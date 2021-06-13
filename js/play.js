@@ -8,7 +8,7 @@ const CHECKPOINT_A_XPOS = 100;
 const CHECKPOINT_B_XPOS = 5950;
 const CHECKPOINT_C_XPOS = 8000;
 
-const PLAYER_STARTING_POINT = CHECKPOINT_C_XPOS;
+const PLAYER_STARTING_POINT = CHECKPOINT_A_XPOS;
 const PARTC_END = 10600;
 
 const FLASH_COLOR = 094198;
@@ -31,25 +31,23 @@ let tweeningPlayer = false; //Also used in the Hall state animation
 const WORLD_WIDTH = 100 * 16; //Get from Tiled
 const WORLD_HEIGHT = 24 * 16; //Get from Tiled
 
-let map;
-let layer;
-let tileset;
-
+// Sounds
 let worldMusic;
+
+
 
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
 
-
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; 
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = true;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
-let level_3_completed = true;
+let level_3_completed = false;
 
 let partA_score = 0;
 let partB_score = 0;
@@ -57,11 +55,21 @@ let partC_score = 0;
 let partD_score = 0;
 let timeToComplete;
 
+// WORLD
+let map;
+let layer;
+let tileset;
+
+// Parallax World
+let backgroundLayer;
+let middleLayer;
+let middleLayer1;
+let frontLayer;
+
 //Paralax stars
-let bg1;
 let bg2;
 let bg3;
-let bg4;
+
 
 
 let cameraTween;
@@ -91,6 +99,14 @@ function preloadPlay() {
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
 
     game.load.audio('worldMusic', './assets/sounds/worldMusic.mp3');
+    game.load.audio('swoosh', './assets/sounds/swoosh.mp3');
+    game.load.audio('teleportSound', './assets/sounds/teleport.mp3');
+
+    // Parallax
+    game.load.image('frontLayer', './assets/imgs/layer03_trees.png');
+    game.load.image('middleLayer', './assets/imgs/layer04_clouds.png');
+    game.load.image('middleLayer1', './assets/imgs/layer05_rocks.png');
+    game.load.image('backgroundLayer', './assets/imgs/layer06_sky.png');
 
     //------PONG--------------------------------------------
     game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
@@ -113,6 +129,8 @@ function preloadPlay() {
     game.load.audio('pong1', './assets/sounds/pongD.mp3');
     game.load.audio('pong2', './assets/sounds/pongF.mp3');
     game.load.audio('pongscored', './assets/sounds/pongscored.mp3');
+    game.load.audio('damage', './assets/sounds/damageNoise.mp3');
+    game.load.audio('ouchSound', './assets/sounds/ouch.mp3');
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('bullet', '/assets/imgs/bullet.png');
@@ -159,8 +177,11 @@ function createPlay() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    // Create sounds for general purpose
     worldMusic = game.add.audio('worldMusic');
     worldMusic.loop = true;
+    swoosh = game.add.sound('swoosh');
+    teleportSound = game.add.sound('teleportSound');
 
     createCameraSet();
     createBackground();
@@ -186,11 +207,17 @@ function updatePlay() {
     isGrounded = game.physics.arcade.collide(player, layer) || game.physics.arcade.collide(player, movingPlatforms) 
                                                             || game.physics.arcade.collide(player, stationaryPlatforms);
 
+    scrollBackground(); // Parallax
     //#region LEVEL 1
 
         //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
         if (!level_1 & !level_1_completed & player.body.x > 2600 & player.body.x < 2800) {
             worldMusic.fadeOut(2000);
+            // Hide Background
+            game.add.tween(backgroundLayer).to({alpha: 0}, 1000, 'Linear', true);
+            game.add.tween(middleLayer).to({alpha: 0}, 1000, 'Linear', true);
+            game.add.tween(middleLayer1).to({alpha: 0}, 1000, 'Linear', true);
+            game.add.tween(frontLayer).to({alpha: 0}, 1000, 'Linear', true);
             level_1 = true;
         }
 
@@ -200,6 +227,12 @@ function updatePlay() {
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
             partA_score = partAScore();
             worldMusic.fadeIn(1000);
+
+            // Show Background
+            game.add.tween(backgroundLayer).to({alpha: 1}, 1000, 'Linear', true);
+            game.add.tween(middleLayer).to({alpha: 1}, 1000, 'Linear', true);
+            game.add.tween(middleLayer1).to({alpha: 1}, 1000, 'Linear', true);
+            game.add.tween(frontLayer).to({alpha: 1}, 1000, 'Linear', true);
         }
 
         //Update level_1
@@ -274,8 +307,7 @@ function updatePlay() {
     //#endregion
 
     //#region LEVEL 3
-    
-        scrollBackground();
+
         if(!level_3_completed && level_2_completed && player.body.x > CHECKPOINT_C_XPOS + 300 ) {
             updatePlatformer();
             level_3 = true;
@@ -300,7 +332,7 @@ function updatePlay() {
 
     //END GAME
     if (player.body.x > 10800 & !tweeningPlayer){
-
+        worldMusic.fadeOut(2000);
         letPlayerMove = false;
         tweeningPlayer = true;
         game.time.events.add(2000, tweenPlayer);
@@ -415,31 +447,34 @@ function createLevel() {
 
 function tweenPlayer(){
 
-    //ELEVATE PLAYER
-    let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
-    game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
-    game.add.tween(player).to( { angle: 1200 }, 1000, "Back.easeOut", true, 500, 0, false);
+        //ELEVATE PLAYER
+        teleportSound.play();
+        teleportSound.fadeOut(1500);
+        
+    
+        let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
+        game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
+        game.add.tween(player).to( { angle: 1200 }, 1000, "Back.easeOut", true, 500, 0, false);
+    
+        //WHEN FINISHED ELEVATING, REDUCE ITS SIZE AND TWEEN IT TO THE ARCADE MACHINE. THEN, DESTROY IT AND START 'play'.
+        completed.onComplete.add(function(){
+            swoosh.play();
+    
+            game.add.tween(player.scale).to( { x: 0.25, y: 0.25 }, 200, "Back.easeInOut", true, 0, 0, false);
+            game.add.tween(player).to( { y: arcadeMachine.y }, 200, "Sine.easeIn", true, 0, 0, false);
+            game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
+    
+            game.time.events.add(500, function(){
 
-
-
-    //WHEN FINISHED ELEVATING, REDUCE ITS SIZE AND TWEEN IT TO THE ARCADE MACHINE. THEN, DESTROY IT AND START 'play'.
-    completed.onComplete.add(function(){
-
-        game.add.tween(player.scale).to( { x: 0.25, y: 0.25 }, 200, "Back.easeInOut", true, 0, 0, false);
-        game.add.tween(player).to( { y: arcadeMachine.y }, 200, "Sine.easeIn", true, 0, 0, false);
-        game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
-
-        game.time.events.add(500, function(){
-
-            player.kill();
-
-            timeToComplete = gameTimer.ms;
-            letPlayerMove = true;
-            tweeningPlayer = false;
-
-            game.state.start('end');
-        })
-    });
+                player.kill();
+    
+                timeToComplete = gameTimer.ms;
+                letPlayerMove = true;
+                tweeningPlayer = false;
+    
+                game.state.start('end');
+            })
+        });
 } 
 
 function flash() {
@@ -466,18 +501,26 @@ function resetComplete(){
     partD_score = 0;
 
     energy = 6;
-    remainingJumps = 4;
+    remainingJumps = JUMP_LIMIT;
     remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;
 }
 
 function createBackground(){
 
     //game.stage.backgroundColor = "#000003";
+    backgroundLayer;
+    middleLayer;
+    middleLayer1;
+    frontLayer;
 
-    //bg1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg1');
+    backgroundLayer = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'backgroundLayer');
+    middleLayer = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'middleLayer');
+    middleLayer1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'middleLayer1');
+    frontLayer = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'frontLayer');
+
     bg2 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg2');
     bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
-    //bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
+    
 
     bg2.alpha = 0;
     bg3.alpha = 0;
@@ -492,11 +535,13 @@ function createBackground(){
     //bg3.sendToBack();
     bg4.sendToBack(); */
 
-    //bg1.fixedToCamera = true;
+    backgroundLayer.fixedToCamera = true;
+    middleLayer.fixedToCamera = true;
+    middleLayer1.fixedToCamera = true;
+    frontLayer.fixedToCamera = true;
+
     bg2.fixedToCamera = true;
     bg3.fixedToCamera = true;
-    //bg4.fixedToCamera = true;
-
 }
 
 function backgroundTweensPlatformer() {
@@ -504,12 +549,23 @@ function backgroundTweensPlatformer() {
     game.add.tween(stage).to({backgroundColor: "#000003"}, 4000, 'Linear', true);
     game.add.tween(bg2).to({alpha: 1}, 4000, 'Linear', true);
     game.add.tween(bg3).to({alpha: 1}, 4000, 'Linear', true);
+
+    game.add.tween(backgroundLayer).to({alpha: 0}, 2500, 'Linear', true);
+    game.add.tween(middleLayer).to({alpha: 0}, 2500, 'Linear', true);
+    game.add.tween(middleLayer1).to({alpha: 0}, 2500, 'Linear', true);
+    game.add.tween(frontLayer).to({alpha: 0}, 2500, 'Linear', true);
 }
 
+// PARALLAX
 function scrollBackground(){
 
-    //bg1.tilePosition.y += 0.6;
+    // first background
+    backgroundLayer.tilePosition.x = backgroundLayer.tilePosition.y - game.camera.x * 1.5;
+    middleLayer.tilePosition.x =  middleLayer.tilePosition.y - game.camera.x * 1.4;
+    middleLayer1.tilePosition.x = middleLayer1.tilePosition.y - game.camera.x * 1.3;
+    frontLayer.tilePosition.x = frontLayer.tilePosition.y - game.camera.x *1.2;
+
+    // Second background
     bg2.tilePosition.y += -0.3;
     bg3.tilePosition.y += -0.2;
-    //bg4.tilePosition.y += 1;
 }

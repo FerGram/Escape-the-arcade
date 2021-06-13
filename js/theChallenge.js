@@ -37,6 +37,7 @@ let bulletCounter = 0;
 // CREATE PHASE -- CREATING ALL SPRITES AND OTHER STUFF
 function createTheChallenge() {
 
+    startVariables();
     createAlien();
     createBullets();
     createSoundsChallenge();
@@ -57,6 +58,20 @@ function createTheChallenge() {
     createTypeGame();
 }
 
+function startVariables() {
+    remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;  // Timer for the remaining time of the whole challenge
+
+    options = ["nintendo 64","playstation one","dreamcast","xbox","nes","gameboy","playstation two","snes"];
+    options.length = 8;
+    option = [];    // The string of the player's input
+    currentLetterIndex = 0; // The index of the letter now waiting
+    currentWordIndex = 0;   // The index of the word inside options
+    doneWords = [false, false, false, false, false, false, false, false]; // For when the player fails and we loop the array, this is in the case we could guess more words
+    correctAnswers = 0; // Number of correct answers
+
+    playingTheChallenge = false;
+    theChallengeScore = 0;
+}
 
 // ------------ U P D A T E -----------------
 function updateTheChallenge() {
@@ -316,6 +331,8 @@ function restartTypeGame() {
         timer.destroy();
         alien.destroy();
         typing.destroy();
+        currentLetterIndex = 0;
+
 
         if (playingTheChallenge) {
         game.input.keyboard.enabled = true;

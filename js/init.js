@@ -81,7 +81,7 @@ function onStartButtonPressed() {
 
 function startHall() {
     mainTheme.stop();
-    game.state.start('play');
+    game.state.start('hall');
 }
 
 const FREQUENCY = 1000/30;
