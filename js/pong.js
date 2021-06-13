@@ -31,6 +31,7 @@ const BALL_VELOCITY = 500;
 const FIREBALL_VELOCITY = 1.5;
 const X_OFFSET = 100;
 const INVULNERAVILITY_SEC = 1500; //In milliseconds
+const SECONDS_TO_WIN = 45;
 
 //-----------------------------------------------------
 
@@ -152,7 +153,7 @@ function updateTimer(){ //This is a time event callback
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 40) stopGame();
+    if (minutes == 0 && seconds > SECONDS_TO_WIN) stopGame();
 }
 
 function createBlackBG(){
@@ -259,7 +260,6 @@ function createStage(){
     game.world.bringToTop(player);
 }
 
-
 function createSoundsPong() {
     pongStartSound = game.add.sound('pongstart');
     pongSound1 = game.add.sound('pong1');
@@ -280,6 +280,7 @@ function stopGame(){
     canStartGame = false;
     gameTimer.destroy();
     gameBallSpawner.destroy();
+    fireBallSpawner.destroy();
 
     balls.forEach(ball => {
         ball.destroy();
@@ -336,8 +337,10 @@ function resetGame(){
     player.body.x = CHECKPOINT_A_XPOS;
 
     canStartGame = false;
+
     gameTimer.destroy();
     gameBallSpawner.destroy();
+    fireBallSpawner.destroy();
 
     balls.forEach(ball => {
         ball.destroy();

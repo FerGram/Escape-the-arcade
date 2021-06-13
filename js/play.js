@@ -37,7 +37,7 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; 
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
 let level_2_completed = false;
