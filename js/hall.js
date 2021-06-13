@@ -1,9 +1,16 @@
-
+const PLAYER_ARCADE_DISTANCE = 750;
 //ALL PLAYER VARIABLES IN play.js 
 let arcadeMachine;
 let arcadeMachineX = 1500;
 let playerVelocityReducer = 1;
 let playerJumpVelocityReducer = 1;
+
+let citySound;
+let shopBell;
+let swoosh;
+let teleportSound;
+
+let inside = false;
 
 let hallState = {
     preload: preloadHall,
@@ -19,10 +26,14 @@ function preloadHall() {
     game.load.image('tiles', './assets/imgs/Hall_Tiles.png');
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
+
+    game.load.audio('citySound', './assets/sounds/cityAmbience.mp3');
+    game.load.audio('enterShop', './assets/sounds/bellring.mp3');
+    game.load.audio('swoosh', './assets/sounds/swoosh.mp3');
+    game.load.audio('teleportSound', './assets/sounds/teleport.mp3');
 }
 
 function createHall() {
-
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     createHallCameraSet();
@@ -31,6 +42,7 @@ function createHall() {
     createHallLevel();
     createHallKeyControls();
     createHallPlayer();
+    createHallSounds();
     
     //This goes here because otherwise the arcade would be in front of the player
     arcadeMachine = game.add.sprite(arcadeMachineX, 710, 'arcadeMachine'); 
@@ -38,6 +50,9 @@ function createHall() {
     arcadeMachine.scale.setTo(0.25, 0.25);
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    citySound.play();
+    
 }
 
 function createHallKeyControls() {
@@ -48,11 +63,18 @@ function updateHall() {
     isGrounded = game.physics.arcade.collide(player, layer);
 
     //If close to arcade, reduce velocity and stop jumping
-    if (arcadeMachine.x - player.body.x < 750) {
-
+    if (arcadeMachine.x - player.body.x < PLAYER_ARCADE_DISTANCE) {
+        if (!inside) {
+            shopBell.play();
+            citySound.fadeOut(3000);
+        }
+        inside = true;
         playerVelocityReducer = 0.5;
         playerJumpVelocityReducer = 0;
         isGrounded = false;
+    }
+    else {
+        inside = false;
     }
 
     if (arcadeMachine.x - player.body.x < 175 & !tweeningPlayer) { //Last part of Hall state
@@ -150,10 +172,7 @@ function createHallLevel() {
 
     // We had errors creating this. Nedded to embed the tileset into the tileset
     map = game.add.tilemap('map');
-    map.addTilesetImage('Hall_Tiles', 'tiles');
-
-    map.setCollisionByExclusion([121, 544]); 
-    
+    map.addTilesetImage('Hall_Tiles', 'tiles'); 
 
     // Create a different layer for every layer in the JSON
     layerbg = map.createLayer('fondo');
@@ -169,18 +188,30 @@ function createHallLevel() {
     layerbg.setScale(2, 2);
     layer.resizeWorld();
 
-    map.setCollision([122, 141], true, layer);
+    map.setCollision([122, 141, 163, 164, 183, 184], true, layer);
+}
+
+function createHallSounds() {
+    citySound = game.add.sound('citySound');
+    citySound.loop = true;
+    shopBell = game.add.sound('enterShop');
+    swoosh = game.add.sound('swoosh');
+    teleportSound = game.add.sound('teleportSound');
 }
 
 function tweenHallPlayer(){
     
     //ELEVATE PLAYER
+    teleportSound.play();
+    teleportSound.fadeOut(1500);
+
     let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
     game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
     game.add.tween(player).to( { angle: 1200 }, 1000, "Back.easeOut", true, 500, 0, false);
 
     //WHEN FINISHED ELEVATING, REDUCE ITS SIZE AND TWEEN IT TO THE ARCADE MACHINE. THEN, DESTROY IT AND START 'play'.
     completed.onComplete.add(function(){
+        swoosh.play();
 
         game.add.tween(player.scale).to( { x: 0.25, y: 0.25 }, 200, "Back.easeInOut", true, 0, 0, false);
         game.add.tween(player).to( { y: arcadeMachine.y }, 200, "Sine.easeIn", true, 0, 0, false);
@@ -191,7 +222,6 @@ function tweenHallPlayer(){
             player.kill();
             game.camera.unfollow();
         })
-
         game.time.events.add(2000, startPlayGame);
     });
 

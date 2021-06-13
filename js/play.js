@@ -1,6 +1,6 @@
 const PLAYER_STARTING_POINT = 200;
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 1500; //DEFAULT 600, changed for debugging
+const PLAYER_VELOCITY = 600; //DEFAULT 600, changed for debugging
 const PLAYER_JUMP_VELOCITY = 650;
 const JUMP_LIMIT = 4;
 
@@ -33,6 +33,8 @@ const WORLD_HEIGHT = 24 * 16; //Get from Tiled
 let map;
 let layer;
 let tileset;
+
+let worldMusic;
 
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
@@ -79,6 +81,8 @@ function preloadPlay() {
     game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/TF.png');
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
+
+    game.load.audio('worldMusic', './assets/sounds/worldMusic.mp3');
 
     //------PONG--------------------------------------------
     game.load.image('ball','/assets/imgs/WhiteSquare.jpg');
@@ -141,6 +145,9 @@ function createPlay() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    worldMusic = game.add.audio('worldMusic');
+    worldMusic.loop = true;
+
     createCameraSet();
     createLevel();
     createPlayer();
@@ -151,6 +158,8 @@ function createPlay() {
     gameTimer.start();
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    worldMusic.play();
 }
 
 function createKeyControls() {
@@ -165,13 +174,17 @@ function updatePlay() {
     //#region LEVEL 1
 
         //Set level_1 in progress           DEFAULT VALUES: 1950 & 2050
-        if (!level_1 & !level_1_completed & player.body.x > 2600 & player.body.x < 2800) level_1 = true;
+        if (!level_1 & !level_1_completed & player.body.x > 2600 & player.body.x < 2800) {
+            worldMusic.fadeOut(2000);
+            level_1 = true;
+        }
 
         //Set level_1 completed
         if (level_1_completed & level_1) {
             level_1 = false;
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
             partA_score = partAScore();
+            worldMusic.fadeIn(1000);
         }
 
         //Update level_1

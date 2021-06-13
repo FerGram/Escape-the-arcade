@@ -4,6 +4,9 @@ const SHIP_OFFSET_VER = 90;
 let btnStart;
 let imgStop;
 
+let mainTheme;
+let startSound;
+
 let initState = {
     preload: preloadInit,
     create: createInit
@@ -12,6 +15,9 @@ let initState = {
 function preloadInit () {
     game.load.image('playButton', 'assets/imgs/buttons/play.png');
     game.load.image('instructions', 'assets/imgs/buttons/instructions.png');
+
+    game.load.audio('startSound', './assets/sounds/startsound.mp3');
+    game.load.audio('mainTheme', './assets/sounds/mainTheme.mp3');
 }
 
 function createInit() {
@@ -28,7 +34,7 @@ function createInit() {
     // PLAY BUTTON
     let posX = game.world.width/2;
     let posY = game.world.height/2 + 100;
-    btnStart = game.add.button(posX, posY, 'playButton', startHall);
+    btnStart = game.add.button(posX, posY, 'playButton', onStartButtonPressed);
     btnStart.checkWorldBounds = true;
 
     btnStart.anchor.setTo(0.5, 0.5);
@@ -44,10 +50,24 @@ function createInit() {
     btnAbout.scale.setTo(0.75);
     btnAbout.events.onInputOver.add(mouseOver, this);
     btnAbout.events.onInputOut.add(mouseOut, this);
+
+    // SOUNDS
+    startSound = game.add.sound('startSound');
+    mainTheme = game.add.sound('mainTheme');
+    mainTheme.play();
+}
+
+function onStartButtonPressed() {
+    startSound.play();
+    game.camera.fade(0x000000, 4000);
+    btnStart.events.destroy();
+    btnAbout.events.destroy();
+    setTimeout(startHall, 1000);
 }
 
 function startHall() {
-    game.state.start('end');
+    mainTheme.stop();
+    game.state.start('hall');
 }
 
 const FREQUENCY = 1000/30;

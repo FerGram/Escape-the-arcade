@@ -34,6 +34,7 @@ function createEnd() {
 }
 
 function startHallAgain() {
+    worldMusic.fadeOut(500);
     game.state.start('hall');
 }
 
