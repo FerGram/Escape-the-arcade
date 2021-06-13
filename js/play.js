@@ -35,6 +35,7 @@ const WORLD_HEIGHT = 24 * 16; //Get from Tiled
 let worldMusic;
 
 
+
 let size = new Phaser.Rectangle();
 let zoomAmount = 0;
 
@@ -128,6 +129,8 @@ function preloadPlay() {
     game.load.audio('pong1', './assets/sounds/pongD.mp3');
     game.load.audio('pong2', './assets/sounds/pongF.mp3');
     game.load.audio('pongscored', './assets/sounds/pongscored.mp3');
+    game.load.audio('damage', './assets/sounds/damageNoise.mp3');
+    game.load.audio('ouchSound', './assets/sounds/ouch.mp3');
 
     //-----THE CHALLENGE-----------------------------------
     game.load.image('bullet', '/assets/imgs/bullet.png');
@@ -565,5 +568,4 @@ function scrollBackground(){
     // Second background
     bg2.tilePosition.y += -0.3;
     bg3.tilePosition.y += -0.2;
-
 }

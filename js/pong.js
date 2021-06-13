@@ -25,6 +25,8 @@ let pongStartSound;
 let pongScoredSound;
 let pongSound1;
 let pongSound2;
+let damageSound;
+let ouchSound;
 
 const SPAWN_BALL_TIME = 7500; //In miliseconds
 const BALL_VELOCITY = 500;
@@ -73,6 +75,8 @@ function updatePONG() {
     if (game.physics.arcade.overlap(player, balls) & hitTimer.ms > INVULNERAVILITY_SEC){ //Player hit by ball
 
         console.log("OUCH!");
+        damageSound.play();
+        ouchSound.play();
         game.camera.shake(0.03, 250);
 
         hitTimer.stop(); //Reset invulnerability timer
@@ -81,7 +85,6 @@ function updatePONG() {
         energy--;
         updateEnergy();
     }
-
 }
 
 function ballMovement() {
@@ -119,7 +122,6 @@ function ballMovement() {
                 player1ScoreLabel.text = player1Score;
             }
             resetBall(ball);
-
         }
     });
 }
@@ -265,6 +267,8 @@ function createSoundsPong() {
     pongSound1 = game.add.sound('pong1');
     pongSound2 = game.add.sound('pong2');
     pongScoredSound = game.add.sound('pongscored');
+    ouchSound = game.add.sound('ouchSound');
+    damageSound = game.add.sound('damage');
 }
 
 function resetBall(ball) {
