@@ -72,7 +72,7 @@ let isJumpingBoss;
 
 let mousePressedDown = false;
 
-let playState = {
+let partDState = {
     preload: preloadPlay,
     create: createPlay,
     update: updatePlay,

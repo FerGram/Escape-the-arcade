@@ -4,7 +4,7 @@ let balls; //This is a group
 let collidedWithXBorder = false;
 let collidedWithYBorder = false;
 let timeElapsed = 0;
-let gameTimer, gameBallSpawner, timeStartPoint, hitTimer;
+let pongTimer, gameBallSpawner, timeStartPoint, hitTimer;
 
 let pongPlayer1Velocity = 500;
 let pongPlayer2Velocity = 500;
@@ -162,15 +162,15 @@ function createBlackBG(){
 
 function createTimer(){
 
-    gameTimer = game.time.create(false);
+    pongTimer = game.time.create(false);
     gameBallSpawner = game.time.create(false);
     fireBallSpawner = game.time.create(false);
 
-    gameTimer.loop(100, updateTimer);
+    pongTimer.loop(100, updateTimer);
     gameBallSpawner.loop(SPAWN_BALL_TIME, createBall);
     fireBallSpawner.loop(SPAWN_BALL_TIME * 2, makeFireBall); //Make fire ball every 3 balls created
 
-    gameTimer.start();
+    pongTimer.start();
     gameBallSpawner.start();
     fireBallSpawner.start();
 
@@ -278,7 +278,7 @@ function resetBall(ball) {
 function stopGame(){
 
     canStartGame = false;
-    gameTimer.destroy();
+    pongTimer.destroy();
     gameBallSpawner.destroy();
     fireBallSpawner.destroy();
 
@@ -304,8 +304,8 @@ function makeFireBall(){
     fireBall = balls.children[0];
     fireBall.loadTexture('fireball');
 
-    game.time.events.add(1000, moveFireBall);
-    game.time.events.add(2000, function(){fireBall.loadTexture('ball');});
+    fireBallSpawner.add(1000, moveFireBall);
+    fireBallSpawner.add(2000, function(){fireBall.loadTexture('ball');});
 }
 
 function moveFireBall(){
@@ -340,7 +340,7 @@ function resetGame(){
 
     canStartGame = false;
 
-    gameTimer.destroy();
+    pongTimer.destroy();
     gameBallSpawner.destroy();
     fireBallSpawner.destroy();
 
@@ -370,6 +370,10 @@ function resetGame(){
     game.stage.backgroundColor = '#18C4BC';
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+}
+
+function partAScore(){
+    return energy;
 }
 
 

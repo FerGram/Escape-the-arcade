@@ -23,6 +23,7 @@ let isWalking = false;
 let isFlipped = false; //Is he looking left?
 let playerScale = 3.5; 
 let letPlayerMove = true;
+let gameTimer;
 
 let tweeningPlayer = false; //Also used in the Hall state animation
 
@@ -39,18 +40,19 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = false; 
+let level_1_completed = true; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = false;
+let level_2_completed = true;
 let level_3 = false;
 let level_3_created = false;
-let level_3_completed = false;
+let level_3_completed = true;
 
-let partA_score;
-let partB_score;
-let partC_score;
-let partD_score;
+let partA_score = 0;
+let partB_score = 0;
+let partC_score = 0;
+let partD_score = 0;
+let timeToComplete;
 
 let cameraTween;
 
@@ -143,6 +145,9 @@ function createPlay() {
     createKeyControls();
     createSoundsPlatformer();
 
+    gameTimer = game.time.create();
+    gameTimer.start();
+
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
@@ -164,6 +169,7 @@ function updatePlay() {
         if (level_1_completed & level_1) {
             level_1 = false;
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+            partA_score = partAScore();
         }
 
         //Update level_1
@@ -229,8 +235,7 @@ function updatePlay() {
         if (level_2){
 
             if(level_2_created) updateTheChallenge();
-        } 
-        partB_score = partBScore();
+        }
 
     //#endregion
 
@@ -263,7 +268,7 @@ function updatePlay() {
 
         letPlayerMove = false;
         tweeningPlayer = true;
-        game.time.events.add(2000, tweenPlayer); //Method of HallState
+        game.time.events.add(2000, tweenPlayer);
     }
     
     playerMovement();
@@ -394,15 +399,12 @@ function tweenPlayer(){
         game.time.events.add(500, function(){
 
             player.kill();
-            game.camera.unfollow();
+            timeToComplete = gameTimer.ms;
+            game.state.start('end');
         })
-
-        //game.time.events.add(2000, ); //TODO FINISH
     });
-
-}
+} 
 
 function flash() {
     game.camera.flash(FLASH_COLOR, 500);
-
 }
