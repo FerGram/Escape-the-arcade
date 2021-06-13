@@ -1,4 +1,4 @@
-const PLAYER_STARTING_POINT = 200;
+
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 600; //DEFAULT 600, changed for debugging
 const PLAYER_JUMP_VELOCITY = 650;
@@ -8,6 +8,7 @@ const CHECKPOINT_A_XPOS = 100;
 const CHECKPOINT_B_XPOS = 5950;
 const CHECKPOINT_C_XPOS = 8000;
 
+const PLAYER_STARTING_POINT = CHECKPOINT_C_XPOS;
 const PARTC_END = 10600;
 
 const FLASH_COLOR = 094198;
@@ -55,6 +56,13 @@ let partB_score = 0;
 let partC_score = 0;
 let partD_score = 0;
 let timeToComplete;
+
+//Paralax stars
+let bg1;
+let bg2;
+let bg3;
+let bg4;
+
 
 let cameraTween;
 
@@ -128,7 +136,7 @@ function preloadPlay() {
     game.load.audio('incorrectSound', '/assets/sounds/error.mp3');
     game.load.audio('keyboardSound', '/assets/sounds/keyboard.mp3');
 
-    //----- PLATFORMS -----------------------------------
+    //----- PLATFORMS ------------------------------------
     game.load.image('tetris1', '/assets/imgs/Tetris1.png');
     game.load.image('tetris2', '/assets/imgs/Tetris2.png');
     game.load.image('tetris3', '/assets/imgs/Tetris3.png');
@@ -137,6 +145,12 @@ function preloadPlay() {
     game.load.image('tetris6', '/assets/imgs/Tetris6.png');
     game.load.audio('tetrisCollision', '/assets/sounds/tetris_clear.mp3');
     game.load.audio('tetrisMovement', '/assets/sounds/tetris_movement.mp3');
+
+    //paralax
+    game.load.image('bg1', './assets/imgs/phase4/bgs/background_1.png');
+    game.load.image('bg2', './assets/imgs/phase4/bgs/background_2.png');
+    game.load.image('bg3', './assets/imgs/phase4/bgs/background_3.png');
+    game.load.image('bg4', './assets/imgs/phase4/bgs/background_4.png');
 }
 
 function createPlay() {
@@ -149,6 +163,7 @@ function createPlay() {
     worldMusic.loop = true;
 
     createCameraSet();
+    createBackground();
     createLevel();
     createPlayer();
     createKeyControls();
@@ -244,6 +259,10 @@ function updatePlay() {
             game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
             partB_score = partBScore();
             createPlatforms();
+            
+
+            // Change background for part C
+            backgroundTweensPlatformer();
         }
 
         //Update level_2
@@ -256,6 +275,7 @@ function updatePlay() {
 
     //#region LEVEL 3
     
+        scrollBackground();
         if(!level_3_completed && level_2_completed && player.body.x > CHECKPOINT_C_XPOS + 300 ) {
             updatePlatformer();
             level_3 = true;
@@ -448,4 +468,48 @@ function resetComplete(){
     energy = 6;
     remainingJumps = 4;
     remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;
+}
+
+function createBackground(){
+
+    //game.stage.backgroundColor = "#000003";
+
+    //bg1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg1');
+    bg2 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg2');
+    //bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
+    bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
+
+    bg2.alpha = 0;
+    bg4.alpha = 0;
+
+    bg2.scale.setTo(3, 3);
+    bg4.scale.setTo(2, 2);
+
+    bg2.smoothed = false;
+    bg4.smoothed = false;
+    /* bg1.sendToBack();
+    //bg2.sendToBack();
+    //bg3.sendToBack();
+    bg4.sendToBack(); */
+
+    //bg1.fixedToCamera = true;
+    bg2.fixedToCamera = true;
+    //bg3.fixedToCamera = true;
+    bg4.fixedToCamera = true;
+
+}
+
+function backgroundTweensPlatformer() {
+    let stage = game.stage;
+    game.add.tween(stage).to({backgroundColor: "#000003"}, 4000, 'Linear', true);
+    game.add.tween(bg2).to({alpha: 1}, 4000, 'Linear', true);
+    game.add.tween(bg4).to({alpha: 1}, 4000, 'Linear', true);
+}
+
+function scrollBackground(){
+
+    //bg1.tilePosition.y += 0.6;
+    //bg2.tilePosition.y += -0.3;
+    bg3.tilePosition.y += -0.2;
+    bg4.tilePosition.y += 1;
 }
