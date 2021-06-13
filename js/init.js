@@ -54,9 +54,10 @@ function createInit() {
     btnAbout.events.onInputOut.add(mouseOut, this);
 
     // SOUNDS
-    startSound = game.add.sound('startSound');
-    mainTheme = game.add.sound('mainTheme');
+    
     if (firstTime){
+        startSound = game.add.sound('startSound');
+    mainTheme = game.add.sound('mainTheme');
         mainTheme.play();
         firstTime = false;
     }
