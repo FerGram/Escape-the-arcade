@@ -3,6 +3,9 @@ const SHIP_OFFSET_VER = 90;
 
 let btnStart;
 let imgStop;
+let imgLogo;
+
+let firstTime = true;;
 
 let mainTheme;
 let startSound;
@@ -15,13 +18,19 @@ let initState = {
 function preloadInit () {
     game.load.image('playButton', 'assets/imgs/buttons/play.png');
     game.load.image('instructions', 'assets/imgs/buttons/instructions.png');
+    game.load.image('imgLogo', './assets/imgs/EscapeTheArcadeLogo.png');
 
     game.load.audio('startSound', './assets/sounds/startsound.mp3');
     game.load.audio('mainTheme', './assets/sounds/mainTheme.mp3');
 }
 
 function createInit() {
-    let textI = 'ESCAPE THE ARCADE';
+
+    let imgLogo = game.add.image(GAME_WIDTH/2, GAME_HEIGHT * 0.3, 'imgLogo')
+    imgLogo.anchor.setTo(0.5, 0.5);
+    imgLogo.scale.setTo(0.5, 0.5);
+
+    /* let textI = 'ESCAPE THE ARCADE';     TEXT TITLE
     let styleI = {font:'50px Krona One', fill:'#FFFFFF'};
     let title = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.2, textI, styleI);
     title.anchor.setTo(0.5, 0.5);
@@ -29,12 +38,12 @@ function createInit() {
     textI = "A game made by: Haroun Guechairi, Marc Pitarch\n& Fernando Gramage";
     styleI = {font:'25px Krona One', fill:'#FFFFFF', align:'center'};
     let text = game.add.text(GAME_WIDTH/2, GAME_HEIGHT * 0.4, textI, styleI);
-    text.anchor.setTo(0.5, 0.5);
+    text.anchor.setTo(0.5, 0.5); */
 
     // PLAY BUTTON
-    let posX = game.world.width/2;
-    let posY = game.world.height/2 + 100;
-    btnStart = game.add.button(posX, posY, 'playButton', onStartButtonPressed);
+    let btnposX = game.world.width/2;
+    let btnposY = game.world.height/2 + 200;
+    btnStart = game.add.button(btnposX, btnposY, 'playButton', onStartButtonPressed);
     btnStart.checkWorldBounds = true;
 
     btnStart.anchor.setTo(0.5, 0.5);
@@ -43,8 +52,8 @@ function createInit() {
     btnStart.events.onInputOut.add(mouseOut, this);
 
     // OTHER BUTTON
-    posY += btnStart.height + 50;
-    btnAbout = game.add.button(posX, posY,
+    btnposY += btnStart.height + 50;
+    btnAbout = game.add.button(btnposX, btnposY,
         'instructions', onAboutButtonPressed);
     btnAbout.anchor.setTo(0.5, 0.5);
     btnAbout.scale.setTo(0.75);
@@ -52,9 +61,14 @@ function createInit() {
     btnAbout.events.onInputOut.add(mouseOut, this);
 
     // SOUNDS
-    startSound = game.add.sound('startSound');
+    
+    if (firstTime){
+        startSound = game.add.sound('startSound');
     mainTheme = game.add.sound('mainTheme');
-    mainTheme.play();
+        mainTheme.play();
+        firstTime = false;
+    }
+       
 }
 
 function onStartButtonPressed() {
@@ -67,7 +81,7 @@ function onStartButtonPressed() {
 
 function startHall() {
     mainTheme.stop();
-    game.state.start('hall');
+    game.state.start('play');
 }
 
 const FREQUENCY = 1000/30;

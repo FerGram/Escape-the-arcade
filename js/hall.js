@@ -204,6 +204,7 @@ function tweenHallPlayer(){
     //ELEVATE PLAYER
     teleportSound.play();
     teleportSound.fadeOut(1500);
+    
 
     let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
     game.add.tween(player).to( { x: player.x - 50 }, 1000, "Back.easeIn", true, 0, 0, false);
@@ -218,7 +219,7 @@ function tweenHallPlayer(){
         game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
 
         game.time.events.add(500, function(){
-
+            game.camera.fade(0x000000, 500);
             player.kill();
             game.camera.unfollow();
         })
