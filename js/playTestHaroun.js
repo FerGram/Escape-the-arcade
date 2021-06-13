@@ -72,6 +72,13 @@ let isJumpingBoss;
 
 let mousePressedDown = false;
 
+let door;
+
+//Level States
+killedAllAliens = false;
+pickedAk47 = false;
+killedBoss = false;
+
 let partDState = {
     preload: preloadPlay,
     create: createPlay,
@@ -107,6 +114,9 @@ function preloadPlay() {
     game.load.image('bg2', './assets/imgs/phase4/bgs/background_2.png');
     game.load.image('bg3', './assets/imgs/phase4/bgs/background_3.png');
     game.load.image('bg4', './assets/imgs/phase4/bgs/background_4.png');
+
+    //Door
+    game.load.image('door', './assets/imgs/phase4/door.png');
 }
 
 function createPlay() {
@@ -131,13 +141,19 @@ function createPlay() {
     createPlayer();
 
     createBoss();
-    createKeyControls();
 
+    door = game.add.sprite(1175, 600, 'door');
+    game.physics.arcade.enable(door);
+    door.bringToTop();
+    door.scale.setTo(3, 6);
+    door.body.moves = false;
+
+    createKeyControls();
 
     createAliens();
     createAlienBullets();
 
-    game.camera.follow(boss.obj, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
     createPistol();
     createBullets();
@@ -148,14 +164,11 @@ function createKeyControls() {
     cursors = game.input.keyboard.createCursorKeys();
 }
 
-function bossCanJump(){
-    boss.canJump();
-}
-
 function updatePlay() {
+    game.physics.arcade.collide(player, door); //Check for collison of player with level
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
     game.physics.arcade.collide(boss.obj, layer); //Check for collison of boss with level
-    //game.physics.arcade.collide(boss.gunTip, layer, bossCanJump, null, this); //Check for collison of boss.guntip with level
+    //game.physics.arcade.overlap(boss.gunTip, bullets, boss.hit, null, this); //Check for collison of boss and bullets.
 
     game.physics.arcade.overlap(bullets, aliens, collisionOfBulletsWithAliens, null, this);
 
@@ -181,8 +194,8 @@ function updatePlay() {
     if (game.time.now > alienFiringTimer)
         fireAliens();
 
-
-    boss.movement(player.position.x);
+    //Boss logic
+    boss.chooseState(bullets);
 }
 
 function collisionOfBulletsWithAliens(b, a){
@@ -322,17 +335,16 @@ function createAliens(){
     aliens.physicsBodyType = Phaser.Physics.ARCADE;
 
     let alien;
-    let cols = 9;
-    let rows = 4;
+    let cols = 2;
+    let rows = 2;
     for (let y = 0; y < rows; y++){
         for (let x = 0; x < cols; x++){
             if ((x == 0 || x == cols - 1) && y == 0)
-                alien = createEnemy(aliens.create(x * 64, y * 64, 'greenAlien'));
+                alien = createEnemy(aliens.create(x * 96, y * 64, 'greenAlien'));
             else{
-                alien = createEnemy(aliens.create(x * 64, y * 64, 'smallAliens'));
+                alien = createEnemy(aliens.create(x * 96, y * 64, 'smallAliens'));
                 alien.frame = getRandomInt(0, 3);
             }
-
 
             alien.anchor.setTo(0.5, 0.5);
             alien.scale.setTo(alienScale, alienScale);
@@ -350,8 +362,6 @@ function createAliens(){
 
 function descendAliens(){
     aliens.y += 30;
-    console.log("Descending..");
-
     //if () TODO add safe position, where the y is reset before they touch the ground.
 }
 
@@ -374,8 +384,14 @@ function fireAliens(){
         game.physics.arcade.moveToObject(alienBullet, player, alienBulletSpd);
         alienFiringTimer = game.time.now + 1500;
     }
+    else if (livingAliens.length <= 0)
+        FinishedFirstPart();
 }
 
+function FinishedFirstPart(){
+    killedAllAliens = true;
+    door.position.y = 300;
+}
 function gunRotation(){
     gun.obj.rotation = game.physics.arcade.angleToPointer(gun.obj);
     if (gun.obj.angle < -90 || gun.obj.angle > 90){ //TODO add bool to check if it is already rotated.
@@ -468,7 +484,7 @@ function createGun(name, spr){
 }
 
 function createBoss(){
-    boss = new Boss(game.add.sprite(100, 100, 'boss'), game.add.sprite(0, 0, 'player'));
+    boss = new Boss(game.add.sprite(100, 100, 'boss'), game.add.sprite(0, 0, 'player'), player, game, alienBullets);
 
     game.physics.arcade.enable(boss.obj);
     game.physics.arcade.enable(boss.gunTip);
@@ -481,7 +497,9 @@ function getRandomInt(min, max) { //TODO delete and use built in random phaser
 }
 
 class Boss{
-    constructor(boss, gt){
+    constructor(boss, gt, p, g, b){
+        this.game = g;
+        this.player = p;
         this.hp = 5000;
 
         this.obj = boss;
@@ -494,6 +512,12 @@ class Boss{
         this.jumpVelocity = -350;
 
         this.gunTip = gt;
+
+        this.canShoot = false;
+        this.isFiring = false;
+        this.actionTimer = 3000;
+        this.bullets = b;
+        this.jumping = false;
     }
 
     facePlayer(playerX){
@@ -513,7 +537,8 @@ class Boss{
         this.obj.body.bounce.y = 0.1;
         this.obj.body.linearDamping = 1;
         this.obj.body.collideWorldBounds = true;
-        this.obj.body.setSize(500 / Math.abs(this.obj.scale.x), 500 / Math.abs(this.obj.scale.y), 500, 500)
+        this.obj.body.setSize(500 / Math.abs(this.obj.scale.x), 500 / Math.abs(this.obj.scale.y),
+                            500 / this.obj.scale.x, 500 / this.obj.scale.y);
 
         this.createAnims();
 
@@ -524,11 +549,15 @@ class Boss{
         this.gunTip.position.x = 600;
         this.gunTip.position.y = 400;
 
+        this.shootTimer = this.game.time.create(false);
+
     }
 
     createAnims(){
         this.obj.animations.add('idle', [0, 1], 4, true);
         this.obj.animations.add('walk', [14, 15, 16, 17, 18, 19, 20, 21], 10, true);
+        this.obj.animations.add('shoot', [70, 71, 72, 73, 74], 10);
+        this.obj.animations.add('jump', [28, 29, 30, 31], 10);
 
         this.obj.animations.play('idle');
     }
@@ -536,36 +565,79 @@ class Boss{
     movement(playerX){
         let distance = this.facePlayer(playerX);
         let dir = Math.sign(distance);
+        let isGrounded = this.obj.body.onFloor();
         this.obj.body.velocity.x = 0;
 
-        if (this.obj.body.onWall()){
-            if (this.obj.body.onFloor())
+        if (this.isFiring) return;
+
+        if (this.jump || this.obj.body.onWall()){
+            if (isGrounded)
             {
                 this.jump = false;
                 this.obj.body.velocity.y = this.jumpVelocity;
+                this.obj.body.velocity.x = 2 * this.velocity * dir;
+                this.obj.animations.play('jump');
+                return;
             }
         }
 
-        if (Math.abs(distance) > 300){
+        if (Math.abs(distance) > 400){
             this.obj.body.velocity.x = this.velocity * dir;
 
-            if (!this.isWalking){
+            if (!this.isWalking && isGrounded){
                 this.isWalking = true;
                 this.obj.animations.play('walk');
-                }
+            }
         }
         else{
-            if (this.isWalking){
+            if (this.isWalking && isGrounded){
                 this.isWalking = false;
+
                 this.obj.animations.play('idle');
+                this.canShoot = true;
             }
         }
     }
 
     canJump(){
         if (this.obj.body.onFloor()){
-            console.log("boss should jump");
             this.jump = true;
+        }
+    }
+
+    fireAtPlayer(){
+        let bullet = bullets.getFirstExists(false);
+        bullet.reset(this.obj.body.x, this.obj.body.y);
+        game.physics.arcade.moveToObject(bullet, this.player, 200);
+        this.isFiring = false;
+        console.log("resetubg fureubg");
+    }
+
+    chooseState(bullets){
+        if (this.actionTimer < game.time.now){
+            let rd = game.rnd.integerInRange(0, 2);
+            this.isWalking = false;
+            if (rd == 0){
+                console.log("firing at player");
+                this.isFiring = true;
+                this.obj.animations.play('shoot');
+                let that = this;
+                setTimeout(function (){
+                    that.fireAtPlayer();
+                }, 1000);
+                //this.shootTimer.add(1000, this.fireAtPlayer);
+                this.shootTimer.start();
+                this.actionTimer = this.game.time.now + 2000;
+            }
+            else if (rd == 1){
+                console.log("jumping at player");
+                this.canJump();
+                this.actionTimer = this.game.time.now + 1000;
+            }
+        }
+        else{
+            console.log("moving to player");
+            this.movement(this.player.position.x);
         }
     }
 }
