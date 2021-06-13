@@ -3,9 +3,11 @@ var instructionsA,instructionsB,instructionsC,instructionsD;
 var instructionSet = [];
 
 var instrucText;
+let instructionBG;
 
 let instructionsState = {
     preload: loadAboutAssets,
+    update: scrollInstructionBackground,
     create: showInstructions
 };
 
@@ -13,11 +15,11 @@ function loadAboutAssets() {
     game.load.image('backButton', 'assets/imgs/buttons/back.png');
     game.load.image('nextButton', 'assets/imgs/buttons/next.png');
     game.load.image('previousButton', 'assets/imgs/buttons/previous.png');
+    game.load.image('bg', './assets/imgs/phase4/bgs/background_1.png');
 }
 
 function showInstructions() {
-    game.add.image(0, 0, 'bg');
-
+    instructionBG = game.add.tileSprite(0, 0, game.world.width, game.world.height,'bg');
     let textTitle = 'ESCAPE THE ARCADE: Instructions';
     let styleTitle = {
         font: 'Krona One',
@@ -128,4 +130,8 @@ function previousInstruction() {
     if (instructionNumber < 0)
         instructionNumber = 3;
     instrucText.setText(instructionSet[instructionNumber]);
+}
+
+function scrollInstructionBackground() {
+    instructionBG.tilePosition.x -= 0.1;
 }
