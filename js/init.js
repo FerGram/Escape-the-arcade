@@ -51,7 +51,7 @@ function createInit() {
     btnStart.events.onInputOver.add(mouseOver, this);
     btnStart.events.onInputOut.add(mouseOut, this);
 
-    // OTHER BUTTON
+    // INSTRUCTIONS BUTTON
     btnposY += btnStart.height + 50;
     btnAbout = game.add.button(btnposX, btnposY,
         'instructions', onAboutButtonPressed);

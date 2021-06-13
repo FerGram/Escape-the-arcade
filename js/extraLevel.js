@@ -1,24 +1,7 @@
-//Adding anims to Fer's playTest
-
-//http://teseo.act.uji.es/~al394827/ProyectoWebTest/
-const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 300;
-const PLAYER_JUMP_VELOCITY = -350;
-
-//World bounds/size
-const WORLD_WIDTH = 100 * 16; //Get from Tiled
-const WORLD_HEIGHT = 24 * 16; //Get from Tiled
-
-let player;
-let cursors;
-
-let isWalking = false; //used to check if walking or not, and to set the proper anim.
-let isFlipped = false; //Is he looking left?
-let playerScale = 2; //Scale of player.
-
-let map;
-let layer;
-let tileset;
+const PLAYER_HIT_PENALIZATION = 2;
+const PLAYER_HIT_AWARD = 2;
+const NUM_ALIEN_COLUMNS = 7;
+const NUM_ALIEN_ROWS = 4;
 
 let gun;
 let gunScale = 1;
@@ -51,13 +34,8 @@ let fireCooldown = 0; //var to wait between fires.
 let alienBulletSpd = 350;
 let alienFiringTimer = 1500;
 
-let size = new Phaser.Rectangle();
-let zoomAmount = 0;
-
 //Paralax
 let bg1;
-let bg2;
-let bg3;
 let bg4;
 
 //Aliens;
@@ -81,14 +59,16 @@ let killedBoss = false;
 
 let bossBullets;
 
-let playState = {
-    preload: preloadPlay,
-    create: createPlay,
-    update: updatePlay,
-    render: renderPlay
+//Extra
+let scoreD, scoreDText;
+
+let partDState = {
+    preload: preloadDPlay,
+    create: createDPlay,
+    update: updateDPlay
 };
 
-function preloadPlay() {
+function preloadDPlay() {
     //Spritesheet for the player
     game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 15, 23, 13);
 
@@ -122,7 +102,7 @@ function preloadPlay() {
     game.load.image('door', './assets/imgs/phase4/door.png');
 }
 
-function createPlay() {
+function createDPlay() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     size.setTo(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
@@ -138,12 +118,21 @@ function createPlay() {
     game.camera.bounds.width = size.width * game.camera.scale.x;
     game.camera.bounds.height = size.height * game.camera.scale.y;
 
-    createLevel();
-    createBackground();
-    createPlayer();
+    createDLevel();
+    createDBackground();
+    createDPlayer();
 
     createBoss();
     createBossBullets();
+
+    scoreD = 100;
+
+    scoreDText = game.add.text(game.camera.position.x + HUD_X * 3, 
+        game.camera.position.y + HUD_Y / 2, 
+        "Score: " + scoreD , 
+        {fontSize: '30px', fill: '#FFFFFF', font:'Verdana'});
+    scoreDText.anchor.setTo(0.5, 0.5);
+    scoreDText.fixedToCamera = true;
 
     door = game.add.sprite(1175, 600, 'door');
     game.physics.arcade.enable(door);
@@ -151,7 +140,7 @@ function createPlay() {
     door.scale.setTo(3, 6);
     door.body.moves = false;
 
-    createKeyControls();
+    createDKeyControls();
 
     createAliens();
     createAlienBullets();
@@ -162,7 +151,7 @@ function createPlay() {
     createBullets();
 }
 
-function createKeyControls() {
+function createDKeyControls() {
     cursors = game.input.keyboard.createCursorKeys();
 }
 
@@ -172,18 +161,18 @@ function collisionOfBossWithBullets(gt, b){
     boss.hurt(boss);
 }
 
-function updatePlay() {
+function updateDPlay() {
     game.physics.arcade.collide(boss.obj, layer); //Check for collison of boss with level
     game.physics.arcade.overlap(boss.gunTip, bullets, collisionOfBossWithBullets, null, this); //Check for collison of boss and bullets.
 
     game.physics.arcade.collide(player, door); //Check for collison of player with level
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
 
-
     game.physics.arcade.overlap(bullets, aliens, collisionOfBulletsWithAliens, null, this);
+    game.physics.arcade.overlap(player, alienBullets, collisionOfBulletsWithPlayer, null, this);
 
-    playerMovement();
-    scrollBackground();
+    playerDMovement();
+    scrollDBackground();
     gun.obj.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
     gunRotation();
 
@@ -211,30 +200,39 @@ function updatePlay() {
 
 }
 
+function collisionOfBulletsWithPlayer(p, ab){
+    ab.kill();
+    
+    scoreD -= PLAYER_HIT_PENALIZATION;
+    scoreDText.text = "Score: " + scoreD;
+}
+
 function collisionOfBulletsWithAliens(b, a){
     b.kill();
 
     a.p.hp--;
     if (a.p.hp <= 0){
         a.kill();
+        scoreD += PLAYER_HIT_AWARD;
+        scoreDText.text = "Score: " + scoreD;
     }
 }
 
-function playerMovement() {
+function playerDMovement() {
     player.body.velocity.x = 0;
 
     if (cursors.up.isDown)
     {
         if (player.body.onFloor())
         {
-            player.body.velocity.y = PLAYER_JUMP_VELOCITY;
+            player.body.velocity.y = -PLAYER_JUMP_VELOCITY;
         }
     }
 
     if (cursors.left.isDown)
     {
         player.body.velocity.x = -PLAYER_VELOCITY;
-        //scrollBackground();
+
         if (!isWalking || !isFlipped){
             isWalking = true;
             isFlipped = true;
@@ -245,7 +243,7 @@ function playerMovement() {
     else if (cursors.right.isDown)
     {
         player.body.velocity.x = PLAYER_VELOCITY;
-        //scrollBackground();
+
         if (!isWalking || isFlipped){
             isWalking = true;
             isFlipped = false;
@@ -262,11 +260,11 @@ function playerMovement() {
     }
 }
 
-function createPlayer() {
+function createDPlayer() {
 
-    player = game.add.sprite(32, 700, 'player');
+    player = game.add.sprite(100, 900, 'player');
     game.physics.arcade.enable(player);
-    game.physics.arcade.gravity.y = 450;
+    game.physics.arcade.gravity.y = GRAVITY;
 
     player.body.bounce.y = 0.2;
     player.body.linearDamping = 1;
@@ -368,8 +366,8 @@ function createAliens(){
     aliens.physicsBodyType = Phaser.Physics.ARCADE;
 
     let alien;
-    let cols = 2;
-    let rows = 2;
+    let cols = NUM_ALIEN_COLUMNS;
+    let rows = NUM_ALIEN_ROWS;
     for (let y = 0; y < rows; y++){
         for (let x = 0; x < cols; x++){
             if ((x == 0 || x == cols - 1) && y == 0)
@@ -438,7 +436,7 @@ function gunRotation(){
     }
 }
 
-function createLevel(){
+function createDLevel(){
     //Create
     map = game.add.tilemap('map');
     map.addTilesetImage('TF', 'tiles');
@@ -452,51 +450,30 @@ function createLevel(){
     //layer.debug = true;
 }
 
-function renderPlay(){
-
-        //game.debug.spriteInfo(gun, 32, 32);
-    //game.debug.body(boss.obj);
-    //game.debug.body(boss.gunTip);
-
-
-    //game.debug.body(door);
-
-}
-
-function createBackground(){
+function createDBackground(){
 
     game.stage.backgroundColor = "#000003";
 
     bg1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg1');
-    //bg2 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg2');
-    //bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
     bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
 
     bg1.sendToBack();
-    //bg2.sendToBack();
-    //bg3.sendToBack();
     bg4.sendToBack();
 
     bg1.fixedToCamera = true;
-    //bg2.fixedToCamera = true;
-    //bg3.fixedToCamera = true;
     bg4.fixedToCamera = true;
 
 }
 
-function scrollBackground(){
+function scrollDBackground(){
 
     bg1.tilePosition.y += 0.6;
-    //bg2.tilePosition.y += -0.3;
-    //bg3.tilePosition.y += -0.2;
     bg4.tilePosition.y += 1;
 }
 
 function shootAK47(){
 
     if (game.time.now > fireCooldown && bullets.countDead() > 0){
-
-        //gun.obj.animations.play('shoot');
 
         fireCooldown = game.time.now + fireSpeed;
 
@@ -565,6 +542,8 @@ class Boss{
         if (b.hp <= 0 && !b.isDead){
             b.isDead = true;
             b.obj.animations.play('death');
+            partD_score = scoreD;
+            game.time.events.add(3000, function(){game.state.start('end')});
         }
     }
 
@@ -666,9 +645,7 @@ class Boss{
         bullet.reset(this.obj.body.x + 50, this.obj.body.y);
         bullet.animations.play('shot');
         bullet.rotation = game.physics.arcade.angleToXY(bullet, player.position.x, player.position.y);
-        //game.physics.arcade.moveToObject(bullet, this.player, 0);
         this.isFiring = false;
-        //console.log("resetubg fureubg");
     }
 
     chooseState(){

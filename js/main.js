@@ -42,10 +42,10 @@ function startGame() {
     game.state.add('hall', hallState);
     // Gameplay Screen
     game.state.add('play', playState);
+    // Extra Level Screen
+    game.state.add('extraLevel', partDState);
     // End Screen
     game.state.add('end', endState);
-    // Some other screen
-    game.state.add('hof', hofState);
 
     game.state.start('init');
 }

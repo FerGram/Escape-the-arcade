@@ -3,6 +3,7 @@ const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 600; //DEFAULT 600, changed for debugging
 const PLAYER_JUMP_VELOCITY = 650;
 const JUMP_LIMIT = 4;
+const GRAVITY = 1400;
 
 const CHECKPOINT_A_XPOS = 100;
 const CHECKPOINT_B_XPOS = 5950;
@@ -69,8 +70,6 @@ let frontLayer;
 //Paralax stars
 let bg2;
 let bg3;
-
-
 
 let cameraTween;
 
@@ -417,7 +416,7 @@ function createPlayer() {
 
     game.physics.arcade.enable(player);
 
-    player.body.gravity.y = 1400;
+    player.body.gravity.y = GRAVITY;
     player.body.bounce.y = 0.2;
     player.body.collideWorldBounds = true;
     player.enableBody = true;
@@ -472,7 +471,7 @@ function tweenPlayer(){
                 letPlayerMove = true;
                 tweeningPlayer = false;
     
-                game.state.start('end');
+                game.state.start('extraLevel');
             })
         });
 } 
@@ -507,7 +506,6 @@ function resetComplete(){
 
 function createBackground(){
 
-    //game.stage.backgroundColor = "#000003";
     backgroundLayer;
     middleLayer;
     middleLayer1;
@@ -530,10 +528,6 @@ function createBackground(){
 
     bg2.smoothed = false;
     bg3.smoothed = false;
-    /* bg1.sendToBack();
-    //bg2.sendToBack();
-    //bg3.sendToBack();
-    bg4.sendToBack(); */
 
     backgroundLayer.fixedToCamera = true;
     middleLayer.fixedToCamera = true;
@@ -560,10 +554,10 @@ function backgroundTweensPlatformer() {
 function scrollBackground(){
 
     // first background
-    backgroundLayer.tilePosition.x = backgroundLayer.tilePosition.y - game.camera.x * 1.5;
-    middleLayer.tilePosition.x =  middleLayer.tilePosition.y - game.camera.x * 1.4;
-    middleLayer1.tilePosition.x = middleLayer1.tilePosition.y - game.camera.x * 1.3;
-    frontLayer.tilePosition.x = frontLayer.tilePosition.y - game.camera.x *1.2;
+    backgroundLayer.tilePosition.x = backgroundLayer.tilePosition.y - game.camera.x * 0.5;
+    middleLayer.tilePosition.x =  middleLayer.tilePosition.y - game.camera.x * 0.7;
+    middleLayer1.tilePosition.x = middleLayer1.tilePosition.y - game.camera.x * 0.8;
+    frontLayer.tilePosition.x = frontLayer.tilePosition.y - game.camera.x * 1;
 
     // Second background
     bg2.tilePosition.y += -0.3;
