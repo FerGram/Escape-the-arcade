@@ -1,7 +1,5 @@
 //Adding anims to Fer's playTest
 
-//const { TileSprite } = require("phaser-ce");
-
 //http://teseo.act.uji.es/~al394827/ProyectoWebTest/
 const HUD_HEIGHT = 50;
 const PLAYER_VELOCITY = 300;
@@ -68,6 +66,7 @@ let alienScale = 2.5;
 
 //Boss
 let boss;
+let bossScale = 0.3;
 let isWalkingBoss;
 let isJumpingBoss;
 
@@ -85,7 +84,7 @@ function preloadPlay() {
     game.load.spritesheet('player', './assets/imgs/SpriteSheet.png', 15, 23, 13);
 
     //Boss spritesheets. TODO Can be grouped in one.
-    game.load.spritesheet('boss', './assets/imgs/phase4/boss/BossSpriteSheet.png', 15, 23, 84);
+    game.load.spritesheet('boss', './assets/imgs/phase4/boss/BossSpriteSheet.png', 1000, 1000, 84);
 
     //Tilemap and level
     game.load.tilemap('map', './assets/levels/levelExtra.json', null, Phaser.Tilemap.TILED_JSON);
@@ -130,13 +129,15 @@ function createPlay() {
     createLevel();
     createBackground();
     createPlayer();
+
+    createBoss();
     createKeyControls();
 
 
     createAliens();
     createAlienBullets();
 
-    game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+    game.camera.follow(boss.obj, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
     createPistol();
     createBullets();
@@ -147,10 +148,17 @@ function createKeyControls() {
     cursors = game.input.keyboard.createCursorKeys();
 }
 
+function bossCanJump(){
+    boss.canJump();
+}
+
 function updatePlay() {
     game.physics.arcade.collide(player, layer); //Check for collison of player with level
+    game.physics.arcade.collide(boss.obj, layer); //Check for collison of boss with level
+    //game.physics.arcade.collide(boss.gunTip, layer, bossCanJump, null, this); //Check for collison of boss.guntip with level
 
     game.physics.arcade.overlap(bullets, aliens, collisionOfBulletsWithAliens, null, this);
+
     playerMovement();
     scrollBackground();
     gun.obj.position.setTo(player.position.x + gunOffsetX, player.position.y + gunOffsetY);
@@ -172,6 +180,9 @@ function updatePlay() {
 
     if (game.time.now > alienFiringTimer)
         fireAliens();
+
+
+    boss.movement(player.position.x);
 }
 
 function collisionOfBulletsWithAliens(b, a){
@@ -391,6 +402,8 @@ function createLevel(){
 
 function renderPlay(){
     //game.debug.spriteInfo(gun, 32, 32);
+    game.debug.body(boss.obj);
+    game.debug.body(boss.gunTip);
 
 }
 
@@ -441,7 +454,7 @@ function shootAK47(){
 }
 
 function createEnemy(spr){
-    let enemy = new Enemy1(spr);
+    let enemy = new Alien(spr);
     game.physics.arcade.enable(enemy.obj);
 
     enemy.obj.body.linearDamping = 1;
@@ -454,12 +467,110 @@ function createGun(name, spr){
     return new Gun(name, spr);
 }
 
+function createBoss(){
+    boss = new Boss(game.add.sprite(100, 100, 'boss'), game.add.sprite(0, 0, 'player'));
+
+    game.physics.arcade.enable(boss.obj);
+    game.physics.arcade.enable(boss.gunTip);
+    boss.createBoss();
+}
+
 //Generates random int between min and max.
-function getRandomInt(min, max) {
+function getRandomInt(min, max) { //TODO delete and use built in random phaser
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-class Enemy1{
+class Boss{
+    constructor(boss, gt){
+        this.hp = 5000;
+
+        this.obj = boss;
+        this.obj.anchor.setTo(0.5, 0.5);
+        this.obj.p = this;
+
+        this.isWalking = false;
+        this.jump = false;
+        this.velocity = 120;
+        this.jumpVelocity = -350;
+
+        this.gunTip = gt;
+    }
+
+    facePlayer(playerX){
+        let dist = playerX - this.obj.position.x;
+
+        if (dist > 0){
+            this.obj.scale.setTo(bossScale, bossScale);
+        }
+        else{
+            this.obj.scale.setTo(-bossScale, bossScale);
+        }
+        return dist;
+
+    }
+
+    createBoss(){
+        this.obj.body.bounce.y = 0.1;
+        this.obj.body.linearDamping = 1;
+        this.obj.body.collideWorldBounds = true;
+        this.obj.body.setSize(500 / Math.abs(this.obj.scale.x), 500 / Math.abs(this.obj.scale.y), 500, 500)
+
+        this.createAnims();
+
+        //Subobjet for jumping
+        this.gunTip.body.moves = false;
+        this.gunTip.anchor.setTo(0.5, 0.5);
+        this.obj.addChild(this.gunTip);
+        this.gunTip.position.x = 600;
+        this.gunTip.position.y = 400;
+
+    }
+
+    createAnims(){
+        this.obj.animations.add('idle', [0, 1], 4, true);
+        this.obj.animations.add('walk', [14, 15, 16, 17, 18, 19, 20, 21], 10, true);
+
+        this.obj.animations.play('idle');
+    }
+
+    movement(playerX){
+        let distance = this.facePlayer(playerX);
+        let dir = Math.sign(distance);
+        this.obj.body.velocity.x = 0;
+
+        if (this.obj.body.onWall()){
+            if (this.obj.body.onFloor())
+            {
+                this.jump = false;
+                this.obj.body.velocity.y = this.jumpVelocity;
+            }
+        }
+
+        if (Math.abs(distance) > 300){
+            this.obj.body.velocity.x = this.velocity * dir;
+
+            if (!this.isWalking){
+                this.isWalking = true;
+                this.obj.animations.play('walk');
+                }
+        }
+        else{
+            if (this.isWalking){
+                this.isWalking = false;
+                this.obj.animations.play('idle');
+            }
+        }
+    }
+
+    canJump(){
+        if (this.obj.body.onFloor()){
+            console.log("boss should jump");
+            this.jump = true;
+        }
+    }
+}
+
+class Alien{
     constructor(enemy){
         this.hp = 2;
 
@@ -472,6 +583,7 @@ class Gun{
     constructor(n, g){
         this.name = n;
         this.obj = g;
+
         this.obj.p = this;
     }
 }
