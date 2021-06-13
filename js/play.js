@@ -10,6 +10,8 @@ const CHECKPOINT_C_XPOS = 8000;
 
 const PARTC_END = 10600;
 
+const FLASH_COLOR = 094198;
+
 let remainingJumps = JUMP_LIMIT;
 
 let player;
@@ -37,7 +39,7 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; 
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
 let level_2_completed = false;
@@ -398,5 +400,10 @@ function tweenPlayer(){
 
         //game.time.events.add(2000, ); //TODO FINISH
     });
+
+}
+
+function flash() {
+    game.camera.flash(FLASH_COLOR, 500);
 
 }

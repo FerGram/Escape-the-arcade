@@ -333,6 +333,8 @@ function updateEnergy(){
 }
 
 function resetGame(){
+    
+    flash();
     player.body.x = CHECKPOINT_A_XPOS;
 
     canStartGame = false;
