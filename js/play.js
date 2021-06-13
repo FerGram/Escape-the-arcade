@@ -1,6 +1,6 @@
 const PLAYER_STARTING_POINT = 200;
 const HUD_HEIGHT = 50;
-const PLAYER_VELOCITY = 600; //DEFAULT 500, changed for debugging
+const PLAYER_VELOCITY = 1500; //DEFAULT 600, changed for debugging
 const PLAYER_JUMP_VELOCITY = 650;
 const JUMP_LIMIT = 4;
 
@@ -136,6 +136,8 @@ function preloadPlay() {
 }
 
 function createPlay() {
+
+    resetComplete(); //Reset all variables in case it's second time playing
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -379,8 +381,6 @@ function createLevel() {
 }
 
 function tweenPlayer(){
-    
-
 
     //ELEVATE PLAYER
     let completed = game.add.tween(player).to( { y: arcadeMachine.y - 200 }, 1000, "Back.easeInOut", true, 0, 0, false);
@@ -399,7 +399,11 @@ function tweenPlayer(){
         game.time.events.add(500, function(){
 
             player.kill();
+
             timeToComplete = gameTimer.ms;
+            letPlayerMove = true;
+            tweeningPlayer = false;
+
             game.state.start('end');
         })
     });
@@ -407,4 +411,28 @@ function tweenPlayer(){
 
 function flash() {
     game.camera.flash(FLASH_COLOR, 500);
+}
+
+function resetComplete(){
+
+    level_1 = false;
+    level_1_created = false;
+    level_1_completed = false; 
+    level_2 = false;
+    level_2_created = false;
+    level_2_completed = false;
+    level_3 = false;
+    level_3_created = false;
+    level_3_completed = false;
+
+    firstTimeC = true;
+
+    partA_score = 0;
+    partB_score = 0;
+    partC_score = 0;
+    partD_score = 0;
+
+    energy = 6;
+    remainingJumps = 4;
+    remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;
 }

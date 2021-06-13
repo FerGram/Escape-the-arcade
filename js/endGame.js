@@ -1,16 +1,16 @@
 let btnStartAgain;
 
 let endState = {
-    preload: preloadInit,
-    create: createInit
+    preload: preloadEnd,
+    create: createEnd
 };
 
-function preloadInit () {
+function preloadEnd () {
     game.load.image('gameFinished', '/assets/imgs/gameFinished.png')
     game.load.image('playAgain', '/assets/imgs/buttons/playAgain.png')
 }
 
-function createInit() {
+function createEnd() {
     
     let bgImg = game.add.sprite(GAME_WIDTH/2, GAME_HEIGHT/2, 'gameFinished');
     bgImg.anchor.setTo(0.5,0.5);
@@ -22,8 +22,8 @@ function createInit() {
     text.anchor.setTo(0.5, 0.5);
 
     // PLAY AGAIN BUTTON
-    let posX = game.world.width/2;
-    let posY = game.world.height * 0.7;
+    let posX = game.camera.width/2;
+    let posY = game.camera.height * 0.7;
     btnStartAgain = game.add.button(posX, posY, 'playAgain', startHallAgain);
     btnStartAgain.checkWorldBounds = true;
 
