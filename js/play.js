@@ -8,7 +8,7 @@ const CHECKPOINT_A_XPOS = 100;
 const CHECKPOINT_B_XPOS = 5950;
 const CHECKPOINT_C_XPOS = 8000;
 
-const PLAYER_STARTING_POINT = CHECKPOINT_C_XPOS;
+const PLAYER_STARTING_POINT = CHECKPOINT_A_XPOS;
 const PARTC_END = 10600;
 
 const FLASH_COLOR = 094198;
@@ -43,13 +43,13 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = true; 
+let level_1_completed = false; 
 let level_2 = false;
 let level_2_created = false;
-let level_2_completed = true;
+let level_2_completed = false;
 let level_3 = false;
 let level_3_created = false;
-let level_3_completed = true;
+let level_3_completed = false;
 
 let partA_score = 0;
 let partB_score = 0;
@@ -466,7 +466,7 @@ function resetComplete(){
     partD_score = 0;
 
     energy = 6;
-    remainingJumps = 4;
+    remainingJumps = JUMP_LIMIT;
     remainingTime = THE_CHALLENGE_TIME_LIMIT/1000;
 }
 
