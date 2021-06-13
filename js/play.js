@@ -476,17 +476,17 @@ function createBackground(){
 
     //bg1 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg1');
     bg2 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg2');
-    //bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
-    bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
+    bg3 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg3');
+    //bg4 = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'bg4');
 
     bg2.alpha = 0;
-    bg4.alpha = 0;
+    bg3.alpha = 0;
 
     bg2.scale.setTo(3, 3);
-    bg4.scale.setTo(2, 2);
+    bg3.scale.setTo(2, 2);
 
     bg2.smoothed = false;
-    bg4.smoothed = false;
+    bg3.smoothed = false;
     /* bg1.sendToBack();
     //bg2.sendToBack();
     //bg3.sendToBack();
@@ -494,8 +494,8 @@ function createBackground(){
 
     //bg1.fixedToCamera = true;
     bg2.fixedToCamera = true;
-    //bg3.fixedToCamera = true;
-    bg4.fixedToCamera = true;
+    bg3.fixedToCamera = true;
+    //bg4.fixedToCamera = true;
 
 }
 
@@ -503,13 +503,13 @@ function backgroundTweensPlatformer() {
     let stage = game.stage;
     game.add.tween(stage).to({backgroundColor: "#000003"}, 4000, 'Linear', true);
     game.add.tween(bg2).to({alpha: 1}, 4000, 'Linear', true);
-    game.add.tween(bg4).to({alpha: 1}, 4000, 'Linear', true);
+    game.add.tween(bg3).to({alpha: 1}, 4000, 'Linear', true);
 }
 
 function scrollBackground(){
 
     //bg1.tilePosition.y += 0.6;
-    //bg2.tilePosition.y += -0.3;
+    bg2.tilePosition.y += -0.3;
     bg3.tilePosition.y += -0.2;
-    bg4.tilePosition.y += 1;
+    //bg4.tilePosition.y += 1;
 }
