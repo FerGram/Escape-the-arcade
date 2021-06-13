@@ -152,7 +152,7 @@ function updateTimer(){ //This is a time event callback
     let seconds = Math.floor(timeElapsed) - (60 * minutes);
 
     //GAME OVER
-    if (minutes == 0 && seconds > 10) stopGame();
+    if (minutes == 0 && seconds > 40) stopGame();
 }
 
 function createBlackBG(){
@@ -171,7 +171,7 @@ function createTimer(){
 
     gameTimer.start();
     gameBallSpawner.start();
-    gameBallSpawner.start();
+    fireBallSpawner.start();
 
     timeStartPoint = game.time.now;
     canStartGame = true;
@@ -325,7 +325,7 @@ function updateEnergy(){
 
     energySprite.loadTexture('battery' + energy);
 
-    if (energy <= 5){
+    if (energy <= 0){
 
         resetGame();
     }

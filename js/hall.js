@@ -14,7 +14,7 @@ function preloadHall() {
 
     //------GENERAL-----------------------------------------
     game.load.image('bgMain', './assets/imgs/bgMain2.jpg');
-    game.load.tilemap('map', './assets/levels/level4.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.tilemap('map', './assets/levels/levelHall.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', './assets/imgs/TF.png');
     game.load.spritesheet('player','./assets/imgs/SpriteSheet.png', 15, 23, 13);
     game.load.image('arcadeMachine','./assets/imgs/arcadeMachine.png');
@@ -117,7 +117,7 @@ function createHallCameraSet(){
 }
 
 function createHallPlayer() {
-    let x = game.world.centerX;
+    let x = 200;
     let y = 710;
 
     player = game.add.sprite(x, y, 'player');

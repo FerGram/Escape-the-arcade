@@ -65,7 +65,7 @@ function createInit() {
 }
 
 function startHall() {
-    game.state.start('play');
+    game.state.start('hall');
 }
 
 const FREQUENCY = 1000/30;

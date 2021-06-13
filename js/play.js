@@ -37,7 +37,7 @@ let zoomAmount = 0;
 
 let level_1 = false;
 let level_1_created = false;
-let level_1_completed = false; 
+let level_1_completed = true; 
 let level_2 = false;
 let level_2_created = false;
 let level_2_completed = false;
@@ -102,6 +102,8 @@ function preloadPlay() {
     game.load.image('bullet', '/assets/imgs/bullet.png');
 
     game.load.image('alien', '/assets/imgs/alien.png');
+    game.load.image('alien death', '/assets/imgs/alienDeath.png');
+    game.load.image('alien hit', '/assets/imgs/alienHit.png');
     game.load.image('error', '/assets/imgs/error.png');
     game.load.image('correct', '/assets/imgs/Consolas.gif');
 
@@ -196,7 +198,7 @@ function updatePlay() {
             stageMiddle = game.camera.position.x + game.camera.width/2;
 
             let instruction = game.add.text(stageMiddle - 350, 3*GAME_HEIGHT/4, 
-                'TYPE THE CONSOLES', {font:'50px Verdana', fill: "#FFFFFF"});
+                'TYPE THE CONSOLES', {font:'50px Courier New', fill: "#FFFFFF"});
 
             instruction.alpha = 0;
             game.add.tween(instruction).to( { alpha: 1 }, 400, "Linear", true, 0, 0, false);
@@ -237,7 +239,7 @@ function updatePlay() {
             updatePlatformer();
             level_3 = true;
             if (player.body.y > GAME_HEIGHT/2 + 250) {
-                player.y = game.world.height - 500;
+                player.y = game.world.height - 550;
                 player.x = CHECKPOINT_C_XPOS;
                 resetPlatforms();
                 level_3 = false;
