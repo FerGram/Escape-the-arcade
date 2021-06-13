@@ -4,6 +4,7 @@ const SHIP_OFFSET_VER = 90;
 let btnStart;
 let imgStop;
 let imgLogo;
+let initBG;
 
 let firstTime = true;;
 
@@ -12,6 +13,7 @@ let startSound;
 
 let initState = {
     preload: preloadInit,
+    update: scrollInitBackground,
     create: createInit
 };
 
@@ -22,6 +24,7 @@ function preloadInit () {
 
     game.load.audio('startSound', './assets/sounds/startsound.mp3');
     game.load.audio('mainTheme', './assets/sounds/mainTheme.mp3');
+    game.load.image('bg', './assets/imgs/phase4/bgs/background_4.png');
 }
 
 function createInit() {
@@ -29,6 +32,8 @@ function createInit() {
     let imgLogo = game.add.image(GAME_WIDTH/2, GAME_HEIGHT * 0.3, 'imgLogo')
     imgLogo.anchor.setTo(0.5, 0.5);
     imgLogo.scale.setTo(0.5, 0.5);
+
+    initBG = game.add.tileSprite(0, 0, game.world.width, game.world.height,'bg');
 
     /* let textI = 'ESCAPE THE ARCADE';     TEXT TITLE
     let styleI = {font:'50px Krona One', fill:'#FFFFFF'};
@@ -102,4 +107,9 @@ function mouseOut(button) {
 function onAboutButtonPressed() {
     // Add the instruction required to start the 'about' state
     game.state.start('instructions');
+}
+
+function scrollInitBackground() {
+    initBG.tilePosition.x += 0.2;
+    initBG.tilePosition.y += 0.1;
 }
