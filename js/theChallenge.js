@@ -316,6 +316,8 @@ function restartTypeGame() {
         timer.destroy();
         alien.destroy();
         typing.destroy();
+        currentLetterIndex = 0;
+
 
         if (playingTheChallenge) {
         game.input.keyboard.enabled = true;

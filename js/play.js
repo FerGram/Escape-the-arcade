@@ -557,10 +557,10 @@ function backgroundTweensPlatformer() {
 function scrollBackground(){
 
     // first background
-    backgroundLayer.tilePosition.x = backgroundLayer.tilePosition.y - game.camera.x * 1.4;
-    middleLayer.tilePosition.x = middleLayer.tilePosition.y - game.camera.x * 1.3;
-    middleLayer1.tilePosition.x = middleLayer1.tilePosition.y - game.camera.x * 1.2 ;
-    frontLayer.tilePosition.x = frontLayer.tilePosition.y - game.camera.x *1.1;
+    backgroundLayer.tilePosition.x = backgroundLayer.tilePosition.y - game.camera.x * 1.5;
+    middleLayer.tilePosition.x =  middleLayer.tilePosition.y - game.camera.x * 1.4;
+    middleLayer1.tilePosition.x = middleLayer1.tilePosition.y - game.camera.x * 1.3;
+    frontLayer.tilePosition.x = frontLayer.tilePosition.y - game.camera.x *1.2;
 
     // Second background
     bg2.tilePosition.y += -0.3;
