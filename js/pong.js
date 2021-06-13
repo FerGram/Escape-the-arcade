@@ -31,7 +31,7 @@ const BALL_VELOCITY = 500;
 const FIREBALL_VELOCITY = 1.5;
 const X_OFFSET = 100;
 const INVULNERAVILITY_SEC = 1500; //In milliseconds
-const SECONDS_TO_WIN = 5;
+const SECONDS_TO_WIN = 30;
 
 //-----------------------------------------------------
 

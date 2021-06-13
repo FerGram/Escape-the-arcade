@@ -462,11 +462,15 @@ function tweenPlayer(){
             game.add.tween(player).to( { x: arcadeMachine.x }, 200, "Sine.easeIn", true, 0, 0, false);
     
             game.time.events.add(500, function(){
-                game.camera.fade(0x000000, 500);
+
                 player.kill();
-                game.camera.unfollow();
+    
+                timeToComplete = gameTimer.ms;
+                letPlayerMove = true;
+                tweeningPlayer = false;
+    
+                game.state.start('end');
             })
-            game.time.events.add(2000, startPlayGame);
         });
 } 
 
